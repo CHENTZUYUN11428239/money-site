@@ -1,0 +1,200 @@
+:root {
+  --green: #157347;
+  --red: #b02a37;
+  --blue: #1f3c88;
+  --bg: #f5f5f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: var(--bg);
+  color: #222;
+}
+
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px 32px;
+}
+
+header h1 {
+  margin: 0 0 4px 0;
+  font-size: 28px;
+}
+
+header .subtitle {
+  margin: 0 0 16px 0;
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.kpi {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.kpi.income {
+  color: var(--green);
+}
+
+.kpi.expense {
+  color: var(--red);
+}
+
+.kpi.balance {
+  color: var(--blue);
+}
+
+.box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.box h3 {
+  margin: 0 0 8px 0;
+}
+
+label {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 7px 9px;
+  margin-top: 3px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn.primary {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.btn.danger {
+  background: #dc3545;
+  color: #fff;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: center;
+  font-size: 14px;
+}
+
+thead {
+  background: #f3f4f6;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+.tag {
+  font-weight: 700;
+}
+
+.tag.income {
+  color: var(--green);
+}
+
+.tag.expense {
+  color: var(--red);
+}
+
+.note-cell {
+  text-align: left;
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: 0.65;
+}
+
+@media (max-width: 768px) {
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
