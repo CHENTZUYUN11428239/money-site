@@ -7,13 +7,35 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- 左上角漢堡選單（新增） -->
+  <button id="hamburger" class="hamburger" aria-label="開啟選單" aria-expanded="false" aria-controls="side-menu">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </button>
+
+  <nav id="side-menu" class="side-menu" aria-hidden="true">
+    <div class="side-menu-header">
+      <h4>選單</h4>
+      <button id="side-close" class="side-close" aria-label="關閉選單">&times;</button>
+    </div>
+    <ul>
+      <li><a href="#summary" class="menu-link">總覽</a></li>
+      <li><a href="#tx-form" class="menu-link">新增紀錄</a></li>
+      <li><a href="#tx-tbody" class="menu-link">收支紀錄</a></li>
+      <li><button id="menu-clear" class="menu-btn">清空所有紀錄</button></li>
+    </ul>
+  </nav>
+
+  <div id="menu-overlay" class="menu-overlay" tabindex="-1" aria-hidden="true"></div>
+
   <div class="container">
     <header>
       <h1>零用錢記帳小管家</h1>
       <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
     </header>
 
-    <section class="summary">
+    <section id="summary" class="summary">
       <div class="card">
         <div class="card-title">總收入</div>
         <div id="total-income" class="kpi income">0</div>
