@@ -269,3 +269,43 @@ th, td {
   .hamburger { left: 10px; top: 10px; }
   .side-menu { width: 70%; }
 }
+/* =======================
+   收支月曆 Calendar
+   ======================= */
+#calendar-section {
+  margin-top: 20px;
+}
+
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 15px;
+}
+
+.calendar-day {
+  padding: 8px 4px;
+  border-radius: 8px;
+  background: #f2f2f2;
+  text-align: center;
+  min-height: 45px;
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.calendar-day.income {
+  background: #e1f9e1;
+  color: #2a7a2a;
+  font-weight: bold;
+}
+
+.calendar-day.expense {
+  background: #ffe2e2;
+  color: #b32020;
+  font-weight: bold;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
