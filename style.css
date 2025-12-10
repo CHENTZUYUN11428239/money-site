@@ -18,7 +18,8 @@ body {
 }
 
 .container {
-  width: min(90%, 1300px);
+  max-width: 1300px;     /* 最大寬度改成1300px*/
+  width: 90%;            /* 寬度為視窗的90% */
   margin: 24px auto;
   padding: 0 16px 32px;
 }
@@ -198,4 +199,5 @@ tr:last-child td {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 
