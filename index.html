@@ -95,22 +95,29 @@
     </form>
   </section>
 
-  <section class="box">
-    <h3>收支紀錄</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>日期</th>
-          <th>類型</th>
-          <th>金額</th>
-          <th>分類</th>
-          <th>備註</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tx-tbody"></tbody>
-    </table>
-  </section>
+    <section class="box">
+      <h3>收支紀錄</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px;">日期</th>
+              <th style="width:70px;">類型</th>
+              <th style="width:80px;">金額</th>
+              <th style="width:100px;">分類</th>
+              <th>備註</th>
+              <th style="width:70px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tx-tbody">
+            <!-- JS 會動態塞資料進來 -->
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">
+        提示：此版本使用瀏覽器的 localStorage 儲存資料，只在本機生效，不會上傳到網路伺服器。
+      </p>
+    </section>
 </div>
 
 <script src="app.js"></script>
