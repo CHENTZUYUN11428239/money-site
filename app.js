@@ -90,8 +90,13 @@ const menu = document.getElementById("side-menu");
 const overlay = document.getElementById("menu-overlay");
 
 ham.onclick = () => {
-  menu.classList.add("open");
-  overlay.classList.add("open");
+  if (menu.classList.contains("open")) {
+    menu.classList.remove("open");
+    overlay.classList.remove("open");
+  } else {
+    menu.classList.add("open");
+    overlay.classList.add("open");
+  }
 };
 
 overlay.onclick = () => {
