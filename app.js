@@ -81,30 +81,72 @@ window.del = id => {
 function renderAll() { renderSummary(); renderTable(); renderCalendar(); }
 renderAll();
 
-/* 汉堡菜单 */
+/* 漢堡選單：展開 / 收起（更穩定的切換與關閉邏輯） */
 const ham = document.getElementById("hamburger");
 const menu = document.getElementById("side-menu");
 const overlay = document.getElementById("menu-overlay");
 const menuClear = document.getElementById("menu-clear");
 
-ham.onclick = () => {
-  const isOpen = menu.classList.contains("open");
-  if (isOpen) {
-    menu.classList.remove("open");
-    overlay.classList.remove("open");
-  } else {
-    menu.classList.add("open");
-    overlay.classList.add("open");
-  }
-};
+// 無障礙屬性（非必需，但有助於狀態同步）
+ham.setAttribute("aria-controls", "side-menu");
+ham.setAttribute("aria-expanded", "false");
 
-overlay.onclick = () => {
+function openMenu() {
+  menu.classList.add("open");
+  overlay.classList.add("open");
+  ham.setAttribute("aria-expanded", "true");
+  document.body.classList.add("menu-open");
+}
+
+function closeMenu() {
   menu.classList.remove("open");
   overlay.classList.remove("open");
-};
+  ham.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("menu-open");
+}
 
+function toggleMenu() {
+  if (menu.classList.contains("open")) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
+}
+
+// 點擊漢堡按鈕：切換
+ham.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleMenu();
+});
+
+// 點擊黑色遮罩：關閉
+overlay.addEventListener("click", (e) => {
+  e.preventDefault();
+  closeMenu();
+});
+
+// 按下 ESC：關閉
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeMenu();
+});
+
+// 點擊頁面非選單區域：關閉（避免某些情況無法收起）
+document.addEventListener("click", (e) => {
+  if (!menu.classList.contains("open")) return;
+  const clickedInsideMenu = menu.contains(e.target);
+  const clickedHamburger = ham.contains(e.target);
+  if (!clickedInsideMenu && !clickedHamburger) {
+    closeMenu();
+  }
+});
+
+// 清空按鈕：執行後關閉選單
 menuClear.onclick = () => {
   if (confirm("确定清空？")) {
-    records = []; save(); renderAll(); menu.classList.remove("open"); overlay.classList.remove("open");
+    records = [];
+    save();
+    renderAll();
+    closeMenu();
   }
 };
