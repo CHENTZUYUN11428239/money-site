@@ -148,3 +148,90 @@ function updateSummary() {
 // 頁面載入初始化
 updateSummary();
 renderTable();
+
+// ========== 月曆功能 ==========
+let calendarDate = new Date(); // 當前顯示的年月
+document.getElementById('prev-month').onclick = function(){
+  calendarDate.setMonth(calendarDate.getMonth() - 1);
+  renderCalendar();
+};
+document.getElementById('next-month').onclick = function(){
+  calendarDate.setMonth(calendarDate.getMonth() + 1);
+  renderCalendar();
+};
+
+function renderCalendar() {
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const allRecords = getAllRecords();
+  const recordsByDate = {};
+  allRecords.forEach(rec => {
+    const d = rec.date;
+    if (!recordsByDate[d]) recordsByDate[d] = [];
+    recordsByDate[d].push(rec);
+  });
+  document.getElementById('calendar-month-label').textContent = `${year}年${String(month+1).padStart(2,"0")}月`;
+  const tbody = document.getElementById('calendar-tbody');
+  tbody.innerHTML = '';
+  let tr = document.createElement('tr');
+  for (let i=0; i<firstDayOfWeek; i++) tr.appendChild(document.createElement('td'));
+  for (let day=1; day<=daysInMonth; day++) {
+    if ((tr.children.length)>=7) {
+      tbody.appendChild(tr);
+      tr = document.createElement('tr');
+    }
+    const td = document.createElement('td');
+    td.classList.add('calendar-cell');
+    const dstr = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    td.setAttribute('data-date', dstr);
+    td.innerHTML = `<div class="cal-day-num">${day}</div>`;
+    if (recordsByDate[dstr]) {
+      const items = recordsByDate[dstr];
+      let shortInfo = '';
+      let incomeSum = 0, expenseSum = 0;
+      items.forEach(r => {
+        if (r.type === '收入') incomeSum += Number(r.amount||0);
+        else expenseSum += Number(r.amount||0);
+      });
+      if (incomeSum>0) shortInfo += `<span class="cal-income">+${incomeSum}</span>`;
+      if (expenseSum>0) shortInfo += `<span class="cal-expense">-${expenseSum}</span>`;
+      td.innerHTML += `<div class="cal-brief">${shortInfo}</div>`;
+      td.classList.add('has-record');
+      td.style.cursor = 'pointer';
+    }
+    td.addEventListener('click', function(){
+      if (recordsByDate[dstr]) showCalendarDetailModal(dstr, recordsByDate[dstr], day);
+    });
+    tr.appendChild(td);
+  }
+  while (tr.children.length < 7) tr.appendChild(document.createElement('td'));
+  tbody.appendChild(tr);
+}
+
+// 詳細紀錄 Modal
+function showCalendarDetailModal(dateStr, records, day){
+  if (!records.length) return;
+  document.getElementById('calendar-detail-date').textContent = `${dateStr} 詳細紀錄`;
+  const ul = document.getElementById('calendar-detail-list');
+  ul.innerHTML = '';
+  records.forEach(rec => {
+    const li = document.createElement('li');
+    li.innerHTML =
+      `<b>[${rec.type}]</b> $${rec.amount} 
+      <span class="label">${rec.category}</span>
+      ${rec.note? `<span class="nt">${rec.note}</span>`: ''}
+      `;
+    ul.appendChild(li);
+  });
+  document.getElementById('calendar-detail-modal').style.display = '';
+}
+document.getElementById('calendar-detail-close').onclick = function(){
+  document.getElementById('calendar-detail-modal').style.display = 'none';
+};
+
+// localStorage 變化自動重繪日曆（跨分頁同步）
+window.addEventListener('storage', function(e){
+  renderCalendar();
+});
