@@ -8,45 +8,48 @@
 </head>
 <body>
 
-  <!-- 漢堡選單 -->
-  <button id="hamburger" class="hamburger" aria-label="開啟選單">
-    <span></span><span></span><span></span>
+  <!-- 漢堡按鈕 -->
+  <button id="hamburger" class="hamburger">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
   </button>
 
+  <!-- 側邊選單 -->
   <nav id="side-menu" class="side-menu">
-    <h4>選單</h4>
-    <a href="#summary">總覽</a>
-    <a href="#tx-form">新增紀錄</a>
-    <a href="#calendar-section">月曆</a>
-    <a href="#records">收支紀錄</a>
-    <button id="menu-clear">清空所有紀錄</button>
+    <h3>選單</h3>
+    <ul>
+      <li><a href="#summary">總覽</a></li>
+      <li><a href="#tx-form">新增紀錄</a></li>
+      <li><a href="#tx-tbody">收支紀錄</a></li>
+      <li><button id="menu-clear">清空紀錄</button></li>
+    </ul>
   </nav>
 
-  <div id="overlay"></div>
+  <!-- 黑色遮罩 -->
+  <div id="menu-overlay" class="menu-overlay"></div>
 
   <div class="container">
     <header>
       <h1>零用錢記帳小管家</h1>
-      <p>理清金錢去向，更好管理零用錢</p>
+      <p class="subtitle">理清金錢去向，更好管理零用錢</p>
     </header>
 
-    <!-- KPI -->
     <section id="summary" class="summary">
-      <div class="card income">
-        <div>總收入</div>
-        <span id="total-income">0</span>
+      <div class="card">
+        <div class="card-title">總收入</div>
+        <div id="total-income" class="kpi income">0</div>
       </div>
-      <div class="card expense">
-        <div>總支出</div>
-        <span id="total-expense">0</span>
+      <div class="card">
+        <div class="card-title">總支出</div>
+        <div id="total-expense" class="kpi expense">0</div>
       </div>
-      <div class="card balance">
-        <div>目前結餘</div>
-        <span id="balance">0</span>
+      <div class="card">
+        <div class="card-title">目前結餘</div>
+        <div id="balance" class="kpi balance">0</div>
       </div>
     </section>
 
-    <!-- 新增紀錄 -->
     <section class="box">
       <h3>新增收支紀錄</h3>
       <form id="tx-form">
@@ -60,37 +63,19 @@
             <option>飲食</option>
             <option>交通</option>
             <option>娛樂</option>
-            <option>文具</option>
             <option>其他</option>
           </select>
           <input type="date" name="date" id="date-input" />
         </div>
         <textarea name="note" placeholder="備註"></textarea>
-        <button class="btn primary">新增</button>
-        <button type="button" id="clear-all-btn" class="btn danger">清空</button>
+        <div class="actions">
+          <button class="btn primary" type="submit">新增</button>
+          <button class="btn danger" type="button" id="clear-all-btn">清空</button>
+        </div>
       </form>
     </section>
 
-    <!-- 月曆 -->
-    <section id="calendar-section" class="box">
-      <h3>📅 本月收支月曆</h3>
-      <div id="calendar"></div>
-    </section>
-
-    <!-- 表格 -->
-    <section id="records" class="box">
+    <section class="box">
       <h3>收支紀錄</h3>
       <table>
-        <thead>
-          <tr>
-            <th>日期</th><th>類型</th><th>金額</th><th>分類</th><th>備註</th><th></th>
-          </tr>
-        </thead>
-        <tbody id="tx-tbody"></tbody>
-      </table>
-    </section>
-  </div>
-
-  <script src="app.js"></script>
-</body>
-</html>
+       
