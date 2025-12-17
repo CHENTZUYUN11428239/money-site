@@ -1,113 +1,135 @@
-const form = document.getElementById("tx-form");
-const tbody = document.getElementById("tx-tbody");
-const clearBtn = document.getElementById("clear-all-btn");
+* { box-sizing: border-box; }
 
-const totalIncomeEl = document.getElementById("total-income");
-const totalExpenseEl = document.getElementById("total-expense");
-const balanceEl = document.getElementById("balance");
-
-const calendar = document.getElementById("calendar");
-
-document.getElementById("date-input").value =
-  new Date().toISOString().split("T")[0];
-
-let records = JSON.parse(localStorage.getItem("records")) || [];
-
-function save() {
-  localStorage.setItem("records", JSON.stringify(records));
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f5f6f8;
 }
 
-function renderTable() {
-  tbody.innerHTML = "";
-  records.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${r.type}</td>
-      <td>${r.amount}</td>
-      <td>${r.category}</td>
-      <td>${r.note}</td>
-      <td><button onclick="del(${r.id})">刪除</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 80px 20px;
 }
 
-function renderSummary() {
-  let income = 0, expense = 0;
-  records.forEach(r => {
-    r.type === "收入" ? income += r.amount : expense += r.amount;
-  });
-  totalIncomeEl.textContent = income;
-  totalExpenseEl.textContent = expense;
-  balanceEl.textContent = income - expense;
+.hamburger {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-function renderCalendar() {
-  calendar.innerHTML = "";
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const first = new Date(y, m, 1).getDay();
-  const days = new Date(y, m + 1, 0).getDate();
-
-  const map = {};
-  records.forEach(r => {
-    const d = new Date(r.date);
-    if (d.getFullYear() === y && d.getMonth() === m) {
-      const day = d.getDate();
-      map[day] = (map[day] || 0) + (r.type === "收入" ? r.amount : -r.amount);
-    }
-  });
-
-  for (let i = 0; i < first; i++) {
-    calendar.innerHTML += `<div class="calendar-day empty"></div>`;
-  }
-
-  for (let d = 1; d <= days; d++) {
-    let cls = "calendar-day";
-    let text = d;
-    if (map[d] > 0) { cls += " income"; text += ` +${map[d]}`; }
-    if (map[d] < 0) { cls += " expense"; text += ` ${map[d]}`; }
-    calendar.innerHTML += `<div class="${cls}">${text}</div>`;
-  }
+.bar {
+  width: 22px;
+  height: 3px;
+  background: #333;
+  margin: 3px 0;
 }
 
-form.addEventListener("submit", e => {
-  e.preventDefault();
-  const fd = new FormData(form);
-  records.push({
-    id: Date.now(),
-    type: fd.get("type"),
-    amount: Number(fd.get("amount")),
-    category: fd.get("category"),
-    date: fd.get("date"),
-    note: fd.get("note")
-  });
-  save();
-  renderAll();
-  form.reset();
-});
-
-function del(id) {
-  records = records.filter(r => r.id !== id);
-  save();
-  renderAll();
-}
-window.del = del;
-
-clearBtn.onclick = () => {
-  if (confirm("確定清空？")) {
-    records = [];
-    save();
-    renderAll();
-  }
-};
-
-function renderAll() {
-  renderTable();
-  renderSummary();
-  renderCalendar();
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 300px;
+  height: 100vh;
+  background: #fff;
+  padding: 20px;
+  box-shadow: 4px 0 20px rgba(0,0,0,.2);
+  transition: left .3s;
+  z-index: 2500;
 }
 
-renderAll();
+.side-menu.open { left: 0; }
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s;
+  z-index: 2400;
+}
+
+.menu-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-calendar {
+  margin-top: 16px;
+}
+
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  font-size: 12px;
+}
+
+.cal-day {
+  padding: 6px;
+  text-align: center;
+  border-radius: 6px;
+  background: #eee;
+}
+
+.cal-income { background: #d4f8e8; }
+.cal-expense { background: #fddede; }
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.kpi.income { color: green; }
+.kpi.expense { color: red; }
+.kpi.balance { color: blue; }
+
+.box {
+  background: #fff;
+  padding: 20px;
+  margin-top: 24px;
+  border-radius: 16px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+  gap: 10px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 8px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+}
+
+.primary { background: #3498db; color: #fff; }
+.danger { background: #e74c3c; color: #fff; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px; border-bottom: 1px solid #eee; }
+
