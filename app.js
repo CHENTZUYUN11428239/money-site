@@ -8,14 +8,14 @@ function openMenu() {
   sideMenu.classList.add("open");
   sideMenu.setAttribute("aria-hidden", "false");
   hamburgerBtn.setAttribute("aria-expanded", "true");
-  menuOverlay.classList. add("open");
+  menuOverlay.style.display = "block";
 }
 
 function closeMenu() {
   sideMenu.classList.remove("open");
   sideMenu.setAttribute("aria-hidden", "true");
   hamburgerBtn.setAttribute("aria-expanded", "false");
-  menuOverlay.classList.remove("open");
+  menuOverlay.style.display = "none";
 }
 
 hamburgerBtn.addEventListener("click", openMenu);
@@ -23,10 +23,8 @@ sideMenuClose.addEventListener("click", closeMenu);
 menuOverlay.addEventListener("click", closeMenu);
 
 // 按 menu-link 自動關閉選單
-document.querySelectorAll('. menu-link').forEach(link => {
-  link.addEventListener('click', function(e) {
-    closeMenu();
-  });
+document.querySelectorAll('.menu-link').forEach(link => {
+  link.addEventListener('click', closeMenu, false);
 });
 
 // ========== 頁面切換（含月曆） ==========
@@ -34,18 +32,18 @@ const calendarSection = document.getElementById('calendar');
 const summarySection = document.getElementById('summary');
 const txFormSection = document.getElementById('tx-form').closest('section');
 const txTableSection = document.getElementById('tx-tbody').closest('section');
-const menuLinks = document.querySelectorAll('. menu-link');
+const menuLinks = document.querySelectorAll('.menu-link');
 
 function showSectionByHash(hash) {
   summarySection.style.display = "none";
-  txFormSection. style.display = "none";
+  txFormSection.style.display = "none";
   txTableSection.style.display = "none";
   calendarSection.style.display = "none";
   if (hash === "#summary") summarySection.style.display = "";
   if (hash === "#tx-form") txFormSection.style.display = "";
   if (hash === "#tx-tbody") txTableSection.style.display = "";
   if (hash === "#calendar") {
-    calendarSection.style. display = "";
+    calendarSection.style.display = "";
     renderCalendar();
   }
 }
@@ -107,12 +105,12 @@ function renderTable() {
   const tbody = document.getElementById("tx-tbody");
   const records = getAllRecords();
   tbody.innerHTML = "";
-  records. reverse().forEach((rec, i) => {
+  records.reverse().forEach((rec, i) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td>${rec.date || ""}</td>
       <td>${rec.type || ""}</td>
       <td>${rec.amount || ""}</td>
-      <td>${rec. category || ""}</td>
+      <td>${rec.category || ""}</td>
       <td>${rec.note || ""}</td>
       <td><button class="del-btn" data-index="${records.length - 1 - i}">刪除</button></td>`;
     tbody.appendChild(tr);
@@ -124,7 +122,7 @@ document.getElementById("tx-tbody").addEventListener("click", function (e) {
   if (e.target.classList.contains("del-btn")) {
     const idx = parseInt(e.target.getAttribute("data-index"));
     let records = getAllRecords();
-    records. splice(idx, 1);
+    records.splice(idx, 1);
     localStorage.setItem("txs", JSON.stringify(records));
     updateSummary();
     renderTable();
@@ -137,7 +135,7 @@ function updateSummary() {
   const records = getAllRecords();
   let totalIncome = 0,
     totalExpense = 0;
-  records. forEach((rec) => {
+  records.forEach((rec) => {
     if (rec.type === "支出") totalExpense += Number(rec.amount || 0);
     else totalIncome += Number(rec.amount || 0);
   });
@@ -180,7 +178,7 @@ function renderCalendar() {
   let tr = document.createElement('tr');
   for (let i=0; i<firstDayOfWeek; i++) tr.appendChild(document.createElement('td'));
   for (let day=1; day<=daysInMonth; day++) {
-    if ((tr.children. length)>=7) {
+    if ((tr.children.length)>=7) {
       tbody.appendChild(tr);
       tr = document.createElement('tr');
     }
@@ -194,7 +192,7 @@ function renderCalendar() {
       let shortInfo = '';
       let incomeSum = 0, expenseSum = 0;
       items.forEach(r => {
-        if (r. type === '收入') incomeSum += Number(r.amount||0);
+        if (r.type === '收入') incomeSum += Number(r.amount||0);
         else expenseSum += Number(r.amount||0);
       });
       if (incomeSum>0) shortInfo += `<span class="cal-income">+${incomeSum}</span>`;
@@ -214,7 +212,7 @@ function renderCalendar() {
 
 // 詳細紀錄 Modal
 function showCalendarDetailModal(dateStr, records, day){
-  if (!records. length) return;
+  if (!records.length) return;
   document.getElementById('calendar-detail-date').textContent = `${dateStr} 詳細紀錄`;
   const ul = document.getElementById('calendar-detail-list');
   ul.innerHTML = '';
@@ -223,7 +221,7 @@ function showCalendarDetailModal(dateStr, records, day){
     li.innerHTML =
       `<b>[${rec.type}]</b> $${rec.amount} 
       <span class="label">${rec.category}</span>
-      ${rec.note?  `<span class="nt">${rec.note}</span>`: ''}
+      ${rec.note? `<span class="nt">${rec.note}</span>`: ''}
       `;
     ul.appendChild(li);
   });
