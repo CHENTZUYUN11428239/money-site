@@ -23,7 +23,7 @@ function renderTable() {
   tbody.innerHTML="";
   records.forEach(r=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${r.date}</td><td>${r.type}</td><td>${r.amount}</td><td>${r.category}</td><td>${r.note}</td><td><button onclick="del(${r.id})">刪</button></td>`;
+    tr.innerHTML=`<td>${r.date}</td><td>${r.type}</td><td>${r.amount}</td><td>${r.category}</td><td>${r.note}</td><td><button onclick="del(${r.id})">删</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -81,12 +81,30 @@ window.del=id=>{
 function renderAll(){ renderSummary(); renderTable(); renderCalendar(); }
 renderAll();
 
-/* 漢堡選單 */
+/* 汉堡菜单 */
 const ham=document.getElementById("hamburger");
 const menu=document.getElementById("side-menu");
 const overlay=document.getElementById("menu-overlay");
 const menuClear=document.getElementById("menu-clear");
 
-ham.onclick=()=>{ menu.classList.add("open"); overlay.classList.add("open"); };
-overlay.onclick=()=>{ menu.classList.remove("open"); overlay.classList.remove("open"); };
-menuClear.onclick=()=>{ if(confirm("確定清空？")){ records=[]; save(); renderAll(); menu.classList.remove("open"); overlay.classList.remove("open"); } };
+ham.onclick=()=>{
+  const isOpen = menu.classList.contains("open");
+  if (isOpen) {
+    menu.classList.remove("open");
+    overlay.classList.remove("open");
+  } else {
+    menu.classList.add("open");
+    overlay.classList.add("open");
+  }
+};
+
+overlay.onclick=()=>{
+  menu.classList.remove("open");
+  overlay.classList.remove("open");
+};
+
+menuClear.onclick=()=>{
+  if(confirm("确定清空？")){
+    records=[]; save(); renderAll(); menu.classList.remove("open"); overlay.classList.remove("open");
+  }
+};
