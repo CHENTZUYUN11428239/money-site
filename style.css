@@ -1,278 +1,65 @@
-/* ==============================
-   全域設定
-============================== */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; margin:0; padding:0; }
 
 body {
-  margin: 0;
-  font-family: "Noto Sans TC", sans-serif;
+  font-family: sans-serif;
   background: #f5f6f8;
   color: #333;
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 80px 20px 40px;
-}
+.container { max-width: 1100px; margin:auto; padding:80px 20px; }
 
-/* ==============================
-   Header
-============================== */
-header h1 {
-  margin: 0;
-  font-size: 28px;
-}
-
-.subtitle {
-  margin-top: 8px;
-  color: #666;
-}
-
-/* ==============================
-   KPI Summary
-============================== */
-.summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin: 24px 0;
-}
-
-.card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-}
-
-.card-title {
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.kpi {
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.kpi.income {
-  color: #2ecc71;
-}
-
-.kpi.expense {
-  color: #e74c3c;
-}
-
-.kpi.balance {
-  color: #3498db;
-}
-
-/* ==============================
-   Box 區塊
-============================== */
-.box {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-}
-
-.box h3 {
-  margin-top: 0;
-}
-
-/* ==============================
-   表單
-============================== */
-.row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-label {
-  font-size: 14px;
-  color: #555;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-textarea {
-  resize: vertical;
-}
-
-.actions {
-  margin-top: 16px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-/* ==============================
-   按鈕
-============================== */
-.btn {
-  border: none;
-  border-radius: 12px;
-  padding: 10px 16px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.btn.primary {
-  background: #3498db;
-  color: #fff;
-}
-
-.btn.danger {
-  background: #e74c3c;
-  color: #fff;
-}
-
-/* ==============================
-   Table
-============================== */
-.table-wrapper {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-.tag.income {
-  color: #2ecc71;
-  font-weight: bold;
-}
-
-.tag.expense {
-  color: #e74c3c;
-  font-weight: bold;
-}
-
-.note-cell {
-  color: #666;
-}
-
-/* ==============================
-   漢堡選單按鈕（重點）
-============================== */
 .hamburger {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  width: 44px;
-  height: 44px;
-  background: #ffffff;
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 3000;
-  cursor: pointer;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  position: fixed; top:16px; left:16px;
+  width:44px; height:44px;
+  background:#fff; border:none; border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  z-index:3000; cursor:pointer;
 }
+.bar { width:22px; height:3px; background:#333; margin:3px 0; }
 
-.hamburger .bar {
-  width: 22px;
-  height: 3px;
-  background: #333;
-  margin: 3px 0;
-  border-radius: 2px;
-}
-
-/* ==============================
-   側邊選單（重點）
-============================== */
 .side-menu {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 260px;
-  height: 100vh;
-  background: #ffffff;
-  box-shadow: 4px 0 20px rgba(0,0,0,0.2);
-  z-index: 2500;
-  padding: 20px;
-  transition: left 0.3s ease;
+  position: fixed; top:0; left:-320px;
+  width:320px; height:100vh;
+  background:#fff; padding:20px; box-shadow:4px 0 20px rgba(0,0,0,.2);
+  transition: left .3s; z-index:2500; overflow-y:auto;
 }
+.side-menu.open { left:0; }
 
-.side-menu.open {
-  left: 0;
-}
-
-.side-menu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.side-menu ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 20px;
-}
-
-.side-menu li {
-  margin-bottom: 12px;
-}
-
-.side-menu a,
-.menu-btn {
-  text-decoration: none;
-  background: none;
-  border: none;
-  color: #333;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-/* ==============================
-   Overlay（黑色背景）
-============================== */
 .menu-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 2400;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+  position: fixed; inset:0; background: rgba(0,0,0,.4);
+  opacity:0; pointer-events:none; transition:.3s; z-index:2400;
 }
+.menu-overlay.open { opacity:1; pointer-events:auto; }
 
-.menu-overlay.open {
-  opacity: 1;
-  pointer-events: auto;
+.menu-calendar { margin-top:16px; }
+#calendar {
+  display:grid;
+  grid-template-columns: repeat(7,1fr);
+  gap:4px;
+  margin-top:8px;
 }
+.cal-day {
+  padding:8px; text-align:center; border-radius:6px;
+  font-size:12px;
+  background:#eee;
+  cursor:pointer;
+}
+.cal-income { background:#d4f8e8; }
+.cal-expense { background:#fddede; }
 
-/* ==============================
-   提示文字
-============================== */
-.hint {
-  font-size: 13px;
-  color: #777;
-}
+.summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:20px 0; }
+.card { background:#fff; padding:20px; border-radius:16px; text-align:center; }
+.kpi.income { color:green; }
+.kpi.expense { color:red; }
+.kpi.balance { color:blue; }
+
+.box { background:#fff; padding:20px; margin-top:24px; border-radius:16px; }
+.row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:10px; }
+input, select, textarea { width:100%; padding:8px; }
+.btn { padding:8px 16px; border:none; border-radius:10px; cursor:pointer; }
+.primary { background:#3498db; color:#fff; }
+.danger { background:#e74c3c; color:#fff; }
+
+table { width:100%; border-collapse: collapse; }
+th, td { padding:8px; border-bottom:1px solid #eee; }
