@@ -1,310 +1,157 @@
-:root {
-  --green: #157347;
-  --red: #b02a37;
-  --blue: #1f3c88;
-  --bg: #f5f5f7;
-}
-
 * {
   box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: var(--bg);
-  color: #222;
+  background: #f4f6f8;
 }
 
 .container {
-  max-width: 1300px;     /* 最大寬度改成1300px*/
-  width: 90%;            /* 寬度為視窗的90% */
-  margin: 24px auto;
-  padding: 0 16px 32px;
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
 }
 
-header h1 {
-  margin: 0 0 4px 0;
-  font-size: 28px;
+header {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-header .subtitle {
-  margin: 0 0 16px 0;
-  opacity: 0.7;
-  font-size: 14px;
-}
-
+/* KPI */
 .summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
+  display: flex;
+  gap: 10px;
 }
 
 .card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px;
+  flex: 1;
+  padding: 15px;
+  border-radius: 10px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  font-size: 18px;
+  background: #fff;
 }
 
-.card-title {
-  font-size: 13px;
-  opacity: 0.7;
-  margin-bottom: 4px;
-}
+.card.income { background: #e9f9e9; }
+.card.expense { background: #ffe9e9; }
+.card.balance { background: #e9f1ff; }
 
-.kpi {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.kpi.income {
-  color: var(--green);
-}
-
-.kpi.expense {
-  color: var(--red);
-}
-
-.kpi.balance {
-  color: var(--blue);
-}
-
+/* 區塊 */
 .box {
   background: #fff;
+  padding: 15px;
   border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  margin-bottom: 16px;
-}
-
-.box h3 {
-  margin: 0 0 8px 0;
-}
-
-label {
-  display: block;
-  margin-top: 6px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  padding: 7px 9px;
-  margin-top: 3px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  font-family: inherit;
-  font-size: 14px;
-}
-
-textarea {
-  resize: vertical;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  border: 0;
-  border-radius: 8px;
-  padding: 7px 12px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn.primary {
-  background: #0d6efd;
-  color: #fff;
-}
-
-.btn.danger {
-  background: #dc3545;
-  color: #fff;
-}
-
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-th, td {
-  padding: 8px 10px;
-  text-align: left;
-  border-bottom: 1px solid #eef2f6;
-}
-.note-cell {
-  max-width: 300px;
-  word-break: break-word;
-}
-
-/* ====== 新增：左上角漢堡與側邊選單樣式（append） ====== */
-.hamburger {
-  position: fixed;
-  left: 14px;
-  top: 14px;
-  width: 44px;
-  height: 38px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: #ffffffcc;
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 8px;
-  z-index: 1200;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  transition: transform 0.15s ease, background-color 0.15s;
-}
-.hamburger:focus {
-  outline: 2px solid #2684ff;
-  outline-offset: 2px;
-}
-.hamburger .bar {
-  display: block;
-  height: 3px;
-  background: #333;
-  border-radius: 2px;
-}
-
-/* 側邊選單（滑入） */
-.side-menu {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 260px;
-  max-width: 80%;
-  height: 100vh;
-  background: #fff;
-  box-shadow: 2px 0 12px rgba(0,0,0,0.12);
-  transform: translateX(-110%);
-  transition: transform 0.28s cubic-bezier(.2,.9,.2,1);
-  z-index: 1250;
-  padding: 12px 12px 20px 12px;
-  display: flex;
-  flex-direction: column;
-}
-.side-menu.open {
-  transform: translateX(0);
-}
-.side-menu-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-.side-menu h4 {
-  margin: 0;
-  font-size: 1.05rem;
-}
-.side-close {
-  background: transparent;
-  border: none;
-  font-size: 1.4rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-/* 選單內容 */
-.side-menu ul {
-  list-style: none;
-  padding: 8px 4px;
-  margin: 6px 0 0 0;
-}
-.side-menu ul li {
-  margin: 6px 0;
-}
-.side-menu a.menu-link {
-  color: #222;
-  text-decoration: none;
-  display: inline-block;
-  padding: 8px 6px;
-  border-radius: 6px;
-}
-.side-menu a.menu-link:hover,
-.side-menu button.menu-btn:hover {
-  background: #f2f6ff;
-}
-
-/* 遮罩：在選單開啟時顯示（點擊可關閉） */
-.menu-overlay {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.24);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 1240;
-}
-.menu-overlay.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-@media (max-width: 640px) {
-  .hamburger { left: 10px; top: 10px; }
-  .side-menu { width: 70%; }
-}
-/* =======================
-   收支月曆 Calendar
-   ======================= */
-#calendar-section {
   margin-top: 20px;
 }
 
+/* 表單 */
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+input, select, textarea {
+  padding: 8px;
+  width: 100%;
+}
+
+textarea {
+  margin-top: 10px;
+}
+
+.btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+}
+
+.primary { background: #4a90e2; color: #fff; }
+.danger { background: #e74c3c; color: #fff; }
+
+/* 表格 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* 月曆 */
 #calendar {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
-  margin-top: 15px;
 }
 
 .calendar-day {
-  padding: 8px 4px;
+  background: #eee;
+  padding: 8px;
   border-radius: 8px;
-  background: #f2f2f2;
   text-align: center;
-  min-height: 45px;
-  font-size: 14px;
-  line-height: 1.1;
 }
 
 .calendar-day.income {
-  background: #e1f9e1;
+  background: #dff5df;
   color: #2a7a2a;
   font-weight: bold;
 }
 
 .calendar-day.expense {
-  background: #ffe2e2;
+  background: #ffdede;
   color: #b32020;
   font-weight: bold;
 }
 
 .calendar-day.empty {
   background: transparent;
+}
+
+/* 漢堡選單 */
+.hamburger {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: none;
+  border: none;
+}
+
+.hamburger span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: #333;
+  margin: 5px 0;
+}
+
+.side-menu {
+  position: fixed;
+  left: -200px;
+  top: 0;
+  width: 200px;
+  height: 100%;
+  background: #fff;
+  padding: 15px;
+  transition: .3s;
+}
+
+.side-menu.open {
+  left: 0;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: none;
+}
+
+#overlay.show {
+  display: block;
 }
