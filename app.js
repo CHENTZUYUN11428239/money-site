@@ -17,7 +17,51 @@ const yearSelector = document.getElementById("year-selector");
 const categorySelect = document.getElementById("category-select");
 const customCategoryInput = document.getElementById("custom-category");
 
-dateInput.value = new Date().toISOString().split("T")[0];
+// 取得台灣時區的當天日期 (YYYY-MM-DD 格式)
+function getTaiwanDate() {
+  const date = new Date();
+  // 使用 toLocaleString 取得台灣時區的日期時間
+  const taiwanTime = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+  const year = taiwanTime.getFullYear();
+  const month = String(taiwanTime.getMonth() + 1).padStart(2, '0');
+  const day = String(taiwanTime.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// 更新日期輸入框為台灣時區的當天日期
+function updateDateInput() {
+  dateInput.value = getTaiwanDate();
+}
+
+// 初始化日期
+updateDateInput();
+
+// 計算距離台灣時區下一個午夜的毫秒數
+function getMillisecondsUntilTaiwanMidnight() {
+  const now = new Date();
+  const taiwanTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+  const tomorrow = new Date(taiwanTime);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  
+  // 計算時間差
+  const nowInTaiwan = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+  return tomorrow - nowInTaiwan;
+}
+
+// 設定在台灣時區午夜時自動更新日期
+function scheduleNextMidnightUpdate() {
+  const msUntilMidnight = getMillisecondsUntilTaiwanMidnight();
+  
+  setTimeout(() => {
+    updateDateInput();
+    // 更新後，設定下一次午夜更新
+    scheduleNextMidnightUpdate();
+  }, msUntilMidnight);
+}
+
+// 啟動午夜自動更新機制
+scheduleNextMidnightUpdate();
 
 // 初始化月份和年份選擇器
 const today = new Date();
@@ -239,7 +283,7 @@ form.addEventListener("submit", (e) => {
   renderAll();
 
   form.reset();
-  dateInput.value = new Date().toISOString().split("T")[0];
+  updateDateInput();
 
   // ✅ 新增：reset 後 UI 回到正常（隱藏自訂類別）
   syncCustomCategoryUI();
