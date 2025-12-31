@@ -6,113 +6,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-
-  <!-- 左上角漢堡選單（新增） -->
-  <button id="hamburger" class="hamburger" aria-label="開啟選單" aria-expanded="false" aria-controls="side-menu">
-    <span class="bar"></span>
-    <span class="bar"></span>
-    <span class="bar"></span>
-  </button>
-
-  <nav id="side-menu" class="side-menu" aria-hidden="true">
-    <div class="side-menu-header">
-      <h4>選單</h4>
-      <button id="side-close" class="side-close" aria-label="關閉選單">&times;</button>
-    </div>
-    <ul>
-      <li><a href="#summary" class="menu-link">總覽</a></li>
-      <li><a href="#tx-form" class="menu-link">新增紀錄</a></li>
-      <li><a href="#tx-tbody" class="menu-link">收支紀錄</a></li>
-      <li><a href="#calendar" class="menu-link" id="calendar-link">月曆</a></li>
-      <li><button id="menu-clear" class="menu-btn">清空所有紀錄</button></li>
-    </ul>
-  </nav>
-
-  <div id="menu-overlay" class="menu-overlay" tabindex="-1" aria-hidden="true"></div>
-
   <div class="container">
     <header>
       <h1>零用錢記帳小管家</h1>
       <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
     </header>
 
-  <!-- 月曆區塊 -->
-  <div class="menu-calendar">
-    <h4>本月收支月曆</h4>
-    <div id="calendar"></div>
+    <!-- 圓餅圖區塊（取代月曆） -->
+    <section class="box" id="chart-section">
+      <h3>收支圓餅圖</h3>
+      <p class="subtitle small">一眼看出收入與支出比例</p>
+      <div class="chart-wrap">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </section>
+
+    <!-- 總覽 -->
+    <section id="summary" class="summary">
+      <div class="card">
+        <div class="card-title">總收入</div>
+        <div id="total-income" class="kpi income">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">總支出</div>
+        <div id="total-expense" class="kpi expense">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">目前結餘</div>
+        <div id="balance" class="kpi balance">0</div>
+      </div>
+    </section>
+
+    <!-- 新增紀錄 -->
+    <section class="box">
+      <h3>新增收支紀錄</h3>
+      <form id="tx-form">
+        <div class="row">
+          <select name="type" required>
+            <option value="支出">支出</option>
+            <option value="收入">收入</option>
+          </select>
+
+          <input type="number" name="amount" placeholder="金額" min="0" step="1" required />
+
+          <select name="category" required>
+            <option>飲食</option>
+            <option>交通</option>
+            <option>娛樂</option>
+            <option>其他</option>
+          </select>
+
+          <input type="date" name="date" id="date-input" required />
+        </div>
+
+        <textarea name="note" placeholder="備註（可留空）"></textarea>
+
+        <div class="actions">
+          <button class="btn primary" type="submit">新增</button>
+          <button class="btn danger" type="button" id="clear-all-btn">清空所有紀錄</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 收支紀錄 -->
+    <section id="records" class="box">
+      <h3>收支紀錄</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>類型</th>
+              <th class="num">金額</th>
+              <th>分類</th>
+              <th>備註</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tx-tbody"></tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
-  <button id="menu-clear" class="menu-clear">清空所有紀錄</button>
-</nav>
-
-<!-- 黑色遮罩 -->
-<div id="menu-overlay" class="menu-overlay"></div>
-
-<div class="container">
-  <header>
-    <h1>零用錢記帳小管家</h1>
-    <p class="subtitle">理清金錢去向，更好管理零用錢</p>
-  </header>
-
-  <section class="summary">
-    <div class="card">
-      <div class="card-title">總收入</div>
-      <div id="total-income" class="kpi income">0</div>
-    </div>
-    <div class="card">
-      <div class="card-title">總支出</div>
-      <div id="total-expense" class="kpi expense">0</div>
-    </div>
-    <div class="card">
-      <div class="card-title">目前結餘</div>
-      <div id="balance" class="kpi balance">0</div>
-    </div>
-  </section>
-
-  <section class="box">
-    <h3>新增收支紀錄</h3>
-    <form id="tx-form">
-      <div class="row">
-        <select name="type">
-          <option value="支出">支出</option>
-          <option value="收入">收入</option>
-        </select>
-        <input type="number" name="amount" placeholder="金額" required />
-        <select name="category">
-          <option>飲食</option>
-          <option>交通</option>
-          <option>娛樂</option>
-          <option>其他</option>
-        </select>
-        <input type="date" name="date" id="date-input" />
-      </div>
-      <textarea name="note" placeholder="備註"></textarea>
-      <div class="actions">
-        <button class="btn primary" type="submit">新增</button>
-        <button class="btn danger" type="button" id="clear-all-btn">清空</button>
-      </div>
-    </form>
-  </section>
-
-<section class="box">
-    <h3>收支紀錄</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>日期</th>
-          <th>類型</th>
-          <th>金額</th>
-          <th>分類</th>
-          <th>備註</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tx-tbody"></tbody>
-    </table>
-  </section>
-</div>
-
-<script src="app.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
