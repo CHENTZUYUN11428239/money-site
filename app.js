@@ -73,12 +73,6 @@ function renderChart() {
   const ctx = pieCanvas.getContext("2d");
   if (!ctx) return;
 
-  // Check if Chart.js is available
-  if (typeof Chart === 'undefined') {
-    console.warn('Chart.js not loaded, skipping chart initialization');
-    return;
-  }
-  
   const { income, expense } = computeTotals();
   const hasData = (income + expense) > 0;
 
@@ -158,67 +152,3 @@ function renderAll() {
 
 
 renderAll();
-
-// ===== 顏色選擇器功能 =====
-(function() {
-  const colorPickerBtn = document.getElementById('color-picker-btn');
-  const colorPickerPanel = document.getElementById('color-picker-panel');
-  const colorOptions = document.querySelectorAll('.color-option');
-  
-  // 如果元素不存在，提早返回
-  if (!colorPickerBtn || !colorPickerPanel || colorOptions.length === 0) {
-    return;
-  }
-  
-  // 定義允許的顏色列表
-  const allowedColors = Array.from(colorOptions).map(opt => opt.getAttribute('data-color'));
-  
-  // 從 localStorage 讀取儲存的背景顏色
-  const savedColor = localStorage.getItem('bgColor');
-  if (savedColor && allowedColors.includes(savedColor)) {
-    document.body.style.background = savedColor;
-    updateSelectedOption(savedColor);
-  }
-  
-  // 切換顏色面板顯示/隱藏
-  colorPickerBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    colorPickerPanel.classList.toggle('active');
-  });
-  
-  // 點擊顏色選項
-  colorOptions.forEach(option => {
-    option.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const color = option.getAttribute('data-color');
-      
-      // 更改背景顏色
-      document.body.style.background = color;
-      
-      // 儲存到 localStorage
-      localStorage.setItem('bgColor', color);
-      
-      // 更新選中狀態
-      updateSelectedOption(color);
-      
-      // 關閉面板
-      colorPickerPanel.classList.remove('active');
-    });
-  });
-  
-  // 點擊其他地方關閉面板
-  document.addEventListener('click', () => {
-    colorPickerPanel.classList.remove('active');
-  });
-  
-  // 更新選中的顏色選項
-  function updateSelectedOption(color) {
-    colorOptions.forEach(opt => {
-      if (opt.getAttribute('data-color') === color) {
-        opt.classList.add('selected');
-      } else {
-        opt.classList.remove('selected');
-      }
-    });
-  }
-})();
