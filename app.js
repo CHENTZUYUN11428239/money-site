@@ -8,6 +8,7 @@ const clearAllBtn = document.getElementById("clear-all-btn");
 
 const pieCanvas = document.getElementById("pieChart");
 let pieChart = null;
+let currentChartType = "total"; // 預設為總收支圓餅圖
 
 dateInput.value = new Date().toISOString().split("T")[0];
 
@@ -19,9 +20,10 @@ function save() {
 
 const fmt = (n) => Number(n || 0).toLocaleString("zh-TW");
 
-function computeTotals() {
+function computeTotals(filterFn = null) {
   let income = 0, expense = 0;
-  for (const r of records) {
+  const filteredRecords = filterFn ? records.filter(filterFn) : records;
+  for (const r of filteredRecords) {
     if (r.type === "收入") income += r.amount;
     else expense += r.amount;
   }
@@ -73,7 +75,27 @@ function renderChart() {
   const ctx = pieCanvas.getContext("2d");
   if (!ctx) return;
 
-  const { income, expense } = computeTotals();
+  // 根據圖表類型選擇過濾條件
+  let filterFn = null;
+  let chartTitle = "總收支圓餅圖";
+  
+  if (currentChartType === "month") {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1; // 0-11 -> 1-12
+    const monthStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+    
+    filterFn = (r) => r.date && r.date.startsWith(monthStr);
+    chartTitle = `月收支圓餅圖 (${currentYear}/${currentMonth})`;
+  } else if (currentChartType === "year") {
+    const currentYear = new Date().getFullYear();
+    const yearStr = String(currentYear);
+    
+    filterFn = (r) => r.date && r.date.startsWith(yearStr);
+    chartTitle = `年收支圓餅圖 (${currentYear})`;
+  }
+
+  const { income, expense } = computeTotals(filterFn);
   const hasData = (income + expense) > 0;
 
   const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
@@ -84,6 +106,7 @@ function renderChart() {
     pieChart.data.labels = labels;
     pieChart.data.datasets[0].data = data;
     pieChart.data.datasets[0].backgroundColor = colors;
+    pieChart.options.plugins.title.text = chartTitle;
     pieChart.update();
     return;
   }
@@ -102,6 +125,12 @@ function renderChart() {
       responsive: true,
       maintainAspectRatio: false,         // ✅ 會吃父層高度（剛剛 CSS 已固定）
       plugins: {
+        title: {
+          display: true,
+          text: chartTitle,
+          font: { size: 16, weight: 'bold' },
+          padding: { bottom: 10 }
+        },
         legend: { position: "bottom" },
         tooltip: {
           callbacks: {
@@ -152,6 +181,22 @@ function renderAll() {
 
 
 renderAll();
+
+/* ===== 圖表類型切換功能 ===== */
+const chartTabs = document.querySelectorAll(".chart-tab");
+
+chartTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    // 更新活動狀態
+    chartTabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    
+    // 更新圖表類型並重新渲染
+    currentChartType = tab.dataset.type;
+    renderChart();
+  });
+});
+
 /* ===== 背景顏色切換功能 ===== */
 const colorBtn = document.getElementById("color-picker-btn");
 const colorPanel = document.getElementById("color-picker-panel");

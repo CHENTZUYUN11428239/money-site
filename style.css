@@ -89,6 +89,36 @@ th.num, td.num { text-align: right; }
 }
 
 /* ===== Pie chart ===== */
+.chart-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chart-tab {
+  padding: 10px 20px;
+  border: 2px solid #e6e8ee;
+  border-radius: 12px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.chart-tab:hover {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.chart-tab.active {
+  background: #3498db;
+  border-color: #3498db;
+  color: #fff;
+}
+
 .chart-wrap{
   width:100%;
   max-width:460px;

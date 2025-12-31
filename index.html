@@ -33,6 +33,14 @@
     <section class="box" id="chart-section">
       <h3>收支圓餅圖</h3>
       <p class="subtitle small">一眼看出收入與支出比例</p>
+      
+      <!-- 圖表類型切換 -->
+      <div class="chart-tabs">
+        <button class="chart-tab active" data-type="total">總收支圓餅圖</button>
+        <button class="chart-tab" data-type="month">月收支圓餅圖</button>
+        <button class="chart-tab" data-type="year">年收支圓餅圖</button>
+      </div>
+      
       <div class="chart-wrap">
         <canvas id="pieChart"></canvas>
       </div>
