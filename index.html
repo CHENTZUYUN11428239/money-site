@@ -12,10 +12,10 @@
     <header>
       <h1>零用錢記帳小管家</h1>
       <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
-      
+
       <!-- 顏色選擇按鈕 -->
-      <button id="color-picker-btn" class="color-picker-btn" title="更換背景顏色">🎨</button>
-      
+      <button id="color-picker-btn" class="color-picker-btn" title="更換背景顏色" type="button">🎨</button>
+
       <!-- 顏色選擇面板 -->
       <div id="color-picker-panel" class="color-picker-panel">
         <div class="color-option" data-color="#f5f6f8" style="background: #f5f6f8;" title="預設灰白"></div>
@@ -29,20 +29,20 @@
       </div>
     </header>
 
-    <!-- 圓餅圖區塊（取代月曆） -->
+    <!-- 圓餅圖區塊 -->
     <section class="box" id="chart-section">
       <h3>收支圓餅圖</h3>
       <p class="subtitle small">一眼看出收入與支出比例</p>
-      
+
       <!-- 圖表類型切換 -->
       <div class="chart-tabs">
-        <button class="chart-tab active" data-type="total">總收支圓餅圖</button>
-        <button class="chart-tab" data-type="month">月收支圓餅圖</button>
+        <button class="chart-tab active" data-type="total" type="button">總收支圓餅圖</button>
+        <button class="chart-tab" data-type="month" type="button">月收支圓餅圖</button>
         <select id="month-selector" class="chart-selector"></select>
-        <button class="chart-tab" data-type="year">年收支圓餅圖</button>
+        <button class="chart-tab" data-type="year" type="button">年收支圓餅圖</button>
         <select id="year-selector" class="chart-selector"></select>
       </div>
-      
+
       <div class="chart-wrap">
         <canvas id="pieChart"></canvas>
       </div>
@@ -76,12 +76,22 @@
 
           <input type="number" name="amount" placeholder="金額" min="0" step="1" required />
 
-          <select name="category" required>
+          <!-- ✅ 這裡：加 id，並保留原本選項 -->
+          <select name="category" id="category-select" required>
             <option>飲食</option>
             <option>交通</option>
             <option>娛樂</option>
             <option>其他</option>
           </select>
+
+          <!-- ✅ 這裡：新增自訂類別輸入框（預設隱藏） -->
+          <input
+            type="text"
+            id="custom-category"
+            class="custom-category"
+            placeholder="自訂類別（選『其他』才會出現）"
+            autocomplete="off"
+          />
 
           <input type="date" name="date" id="date-input" required />
         </div>
