@@ -24,7 +24,7 @@
         <div class="color-option" data-color="#fef5e7" style="background: #fef5e7;" title="淺黃"></div>
         <div class="color-option" data-color="#fce8f3" style="background: #fce8f3;" title="淺粉"></div>
         <div class="color-option" data-color="#f0e8f8" style="background: #f0e8f8;" title="淺紫"></div>
-        <div class="color-option" data-color="#ffffff" style="background: #ffffff;" title="純白"></div>
+        <div class="color-option" data-color="#ffffff" style="background:  #ffffff;" title="純白"></div>
         <div class="color-option" data-color="#e8e8e8" style="background: #e8e8e8;" title="淺灰"></div>
       </div>
     </header>
@@ -66,7 +66,7 @@
 
           <input type="number" name="amount" placeholder="金額" min="0" step="1" required />
 
-          <select name="category" required>
+          <select name="category" id="category-select" required>
             <option>飲食</option>
             <option>交通</option>
             <option>娛樂</option>
@@ -74,6 +74,11 @@
           </select>
 
           <input type="date" name="date" id="date-input" required />
+        </div>
+
+        <!-- 自訂類別輸入欄位（預設隱藏） -->
+        <div id="custom-category-wrapper" style="display: none; margin-top: 10px;">
+          <input type="text" id="custom-category-input" placeholder="請輸入自訂類別名稱" maxlength="20" />
         </div>
 
         <textarea name="note" placeholder="備註（可留空）"></textarea>
