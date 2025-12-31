@@ -73,6 +73,12 @@ function renderChart() {
   const ctx = pieCanvas.getContext("2d");
   if (!ctx) return;
 
+  // Check if Chart.js is available
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded, skipping chart initialization');
+    return;
+  }
+
   const { income, expense } = computeTotals();
   const hasData = (income + expense) > 0;
 
@@ -85,12 +91,6 @@ function renderChart() {
     pieChart.data.datasets[0].data = data;
     pieChart.data.datasets[0].backgroundColor = colors;
     pieChart.update();
-    return;
-  }
-
-  // Check if Chart.js is available before creating the chart
-  if (typeof Chart === 'undefined') {
-    console.warn('Chart.js not loaded, skipping chart initialization');
     return;
   }
 
@@ -165,9 +165,12 @@ renderAll();
   const colorPickerPanel = document.getElementById('color-picker-panel');
   const colorOptions = document.querySelectorAll('.color-option');
   
+  // 定義允許的顏色列表
+  const allowedColors = Array.from(colorOptions).map(opt => opt.getAttribute('data-color'));
+  
   // 從 localStorage 讀取儲存的背景顏色
   const savedColor = localStorage.getItem('bgColor');
-  if (savedColor) {
+  if (savedColor && allowedColors.includes(savedColor)) {
     document.body.style.background = savedColor;
     updateSelectedOption(savedColor);
   }
