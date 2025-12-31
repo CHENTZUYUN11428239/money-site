@@ -20,10 +20,29 @@ const today = new Date();
 const currentMonth = today.getMonth() + 1;
 const currentYear = today.getFullYear();
 
-monthSelector.value = currentMonth;
+// 動態生成年月選項（從 2020 年 1 月到當前年份+1年 12 月）
+const startYear = 2020;
+const endYear = currentYear + 1;
+const currentYearMonth = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+
+for (let year = startYear; year <= endYear; year++) {
+  for (let month = 1; month <= 12; month++) {
+    const option = document.createElement("option");
+    const monthStr = String(month).padStart(2, '0');
+    option.value = `${year}-${monthStr}`;
+    option.textContent = `${year}年${month}月`;
+    
+    // 預設選擇當前年月
+    if (option.value === currentYearMonth) {
+      option.selected = true;
+    }
+    
+    monthSelector.appendChild(option);
+  }
+}
 
 // 動態生成年份選項（從 2020 年到當前年份+1年）
-for (let year = 2020; year <= currentYear + 1; year++) {
+for (let year = startYear; year <= endYear; year++) {
   const option = document.createElement("option");
   option.value = year;
   option.textContent = `${year}年`;
@@ -101,12 +120,11 @@ function renderChart() {
   let chartTitle = "總收支圓餅圖";
   
   if (currentChartType === "month") {
-    const selectedYear = yearSelector.value;
-    const selectedMonth = monthSelector.value;
-    const monthStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
+    const selectedYearMonth = monthSelector.value; // 格式：YYYY-MM
+    const [year, month] = selectedYearMonth.split('-');
     
-    filterFn = (r) => r.date && r.date.startsWith(monthStr);
-    chartTitle = `月收支圓餅圖 (${selectedYear}/${selectedMonth})`;
+    filterFn = (r) => r.date && r.date.startsWith(selectedYearMonth);
+    chartTitle = `月收支圓餅圖 (${year}年${parseInt(month)}月)`;
   } else if (currentChartType === "year") {
     const selectedYear = yearSelector.value;
     const yearStr = String(selectedYear);
@@ -225,7 +243,7 @@ monthSelector.addEventListener("change", () => {
 });
 
 yearSelector.addEventListener("change", () => {
-  if (currentChartType === "month" || currentChartType === "year") {
+  if (currentChartType === "year") {
     renderChart();
   }
 });
