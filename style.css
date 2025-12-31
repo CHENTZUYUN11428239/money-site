@@ -98,14 +98,17 @@ th.num, td.num { text-align: right; }
   background:#f7f8fa;
 
   position: relative;
-  height: 340px;          /* ✅ Chart.js 最吃這個：父層高度 */
+  height: 340px;
 }
 
 #pieChart{
   width:100% !important;
-  height:100% !important; /* ✅ 讓 canvas 填滿 chart-wrap */
+  height:100% !important;
   display:block;
 }
+
+/* ✅ 其他分類輸入框：預設隱藏（選「其他」才顯示） */
+#custom-category { display: none; }
 
 /* ===== 顏色選擇器 ===== */
 header {
