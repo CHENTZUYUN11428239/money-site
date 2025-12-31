@@ -211,3 +211,11 @@ header {
   border-width: 3px;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
+/* ===== 自訂類別輸入框 ===== */
+.custom-category {
+  display: none;
+}
+
+.custom-category.show {
+  display: block;
+}
