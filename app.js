@@ -9,16 +9,13 @@ const clearAllBtn = document.getElementById("clear-all-btn");
 const pieCanvas = document.getElementById("pieChart");
 let pieChart = null;
 
-// ===== 類別自訂：抓元素（你 HTML 已經有） =====
+// ✅ 分類：下拉 + 其他輸入框
 const categorySelect = document.getElementById("category-select");
-const newCategoryInput = document.getElementById("new-category");
-const addCategoryBtn = document.getElementById("add-category-btn");
-const removeCategoryBtn = document.getElementById("remove-category-btn");
+const customCategoryInput = document.getElementById("custom-category");
 
 // 日期預設今天
 dateInput.value = new Date().toISOString().split("T")[0];
 
-// ===== records =====
 let records = JSON.parse(localStorage.getItem("records")) || [];
 
 function save() {
@@ -27,98 +24,25 @@ function save() {
 
 const fmt = (n) => Number(n || 0).toLocaleString("zh-TW");
 
-// ===== 類別自訂：localStorage =====
-const DEFAULT_CATEGORIES = ["飲食", "交通", "娛樂", "其他"];
-let categories = JSON.parse(localStorage.getItem("categories")) || DEFAULT_CATEGORIES;
+// ✅ 控制：選「其他」才顯示輸入框
+function updateCustomCategoryVisibility() {
+  if (!categorySelect || !customCategoryInput) return;
 
-function saveCategories() {
-  localStorage.setItem("categories", JSON.stringify(categories));
-}
-
-function normalizeCategory(s) {
-  return (s || "").trim().replace(/\s+/g, " ");
-}
-
-function renderCategories(selectedValue) {
-  // 若 HTML 沒放這些元素就不做（保險）
-  if (!categorySelect) return;
-
-  categorySelect.innerHTML = "";
-  categories.forEach((cat) => {
-    const opt = document.createElement("option");
-    opt.value = cat;
-    opt.textContent = cat;
-    categorySelect.appendChild(opt);
-  });
-
-  if (selectedValue && categories.includes(selectedValue)) {
-    categorySelect.value = selectedValue;
+  if (categorySelect.value === "其他") {
+    customCategoryInput.style.display = "block";
+    customCategoryInput.required = true;
   } else {
-    categorySelect.value = categories[0] || "其他";
+    customCategoryInput.style.display = "none";
+    customCategoryInput.required = false;
+    customCategoryInput.value = "";
   }
 }
 
-// 將「舊紀錄裡的類別」同步進 categories（避免同學之前亂加分類資料）
-function syncCategoriesFromRecords() {
-  let changed = false;
-
-  for (const r of records) {
-    const cat = normalizeCategory(r.category);
-    if (cat && !categories.includes(cat)) {
-      categories.push(cat);
-      changed = true;
-    }
-  }
-
-  if (changed) saveCategories();
+if (categorySelect) {
+  categorySelect.addEventListener("change", updateCustomCategoryVisibility);
+  updateCustomCategoryVisibility(); // 初始化
 }
 
-// 新增類別
-if (addCategoryBtn && newCategoryInput) {
-  addCategoryBtn.addEventListener("click", () => {
-    const cat = normalizeCategory(newCategoryInput.value);
-    if (!cat) return;
-
-    if (categories.includes(cat)) {
-      alert("這個類別已經存在了！");
-      renderCategories(cat);
-      newCategoryInput.value = "";
-      return;
-    }
-
-    categories.push(cat);
-    saveCategories();
-    renderCategories(cat); // 新增後直接選到它
-    newCategoryInput.value = "";
-  });
-}
-
-// 刪除目前類別（只允許刪自訂類別；若已有紀錄使用就不讓刪，避免資料亂）
-if (removeCategoryBtn) {
-  removeCategoryBtn.addEventListener("click", () => {
-    const current = categorySelect?.value;
-    if (!current) return;
-
-    if (DEFAULT_CATEGORIES.includes(current)) {
-      alert("內建類別不能刪除喔！");
-      return;
-    }
-
-    const used = records.some((r) => r.category === current);
-    if (used) {
-      alert("已有紀錄使用此類別，建議不要刪除（或先把那些紀錄改成其他類別）。");
-      return;
-    }
-
-    if (!confirm(`確定刪除類別「${current}」？`)) return;
-
-    categories = categories.filter((c) => c !== current);
-    saveCategories();
-    renderCategories();
-  });
-}
-
-// ===== 計算、渲染 =====
 function computeTotals() {
   let income = 0, expense = 0;
   for (const r of records) {
@@ -163,7 +87,7 @@ tbody.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn-del");
   if (!btn) return;
   const id = Number(btn.dataset.id);
-  records = records.filter((r) => r.id !== id);
+  records = records.filter(r => r.id !== id);
   save();
   renderAll();
 });
@@ -173,14 +97,13 @@ function renderChart() {
   const ctx = pieCanvas.getContext("2d");
   if (!ctx) return;
 
-  // Check if Chart.js is available
   if (typeof Chart === "undefined") {
     console.warn("Chart.js not loaded, skipping chart initialization");
     return;
   }
 
   const { income, expense } = computeTotals();
-  const hasData = income + expense > 0;
+  const hasData = (income + expense) > 0;
 
   const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
   const data = hasData ? [income, expense] : [1, 1];
@@ -198,13 +121,11 @@ function renderChart() {
     type: "pie",
     data: {
       labels,
-      datasets: [
-        {
-          data,
-          backgroundColor: colors,
-          borderWidth: 1,
-        },
-      ],
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 1
+      }]
     },
     options: {
       responsive: true,
@@ -213,12 +134,11 @@ function renderChart() {
         legend: { position: "bottom" },
         tooltip: {
           callbacks: {
-            label: (c) =>
-              `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`,
-          },
-        },
-      },
-    },
+            label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+          }
+        }
+      }
+    }
   });
 }
 
@@ -229,14 +149,24 @@ form.addEventListener("submit", (e) => {
   const amount = Number(fd.get("amount"));
   if (!Number.isFinite(amount) || amount < 0) return;
 
+  // ✅ 分類：若選「其他」就用輸入框，否則用下拉
+  let category = fd.get("category") || "";
+  if (category === "其他") {
+    category = (customCategoryInput?.value || "").trim();
+    if (!category) {
+      alert("請輸入其他分類名稱");
+      customCategoryInput?.focus();
+      return;
+    }
+  }
+
   records.push({
     id: Date.now(),
     type: fd.get("type"),
     amount,
-    // ✅ 用下拉目前值（更穩）
-    category: categorySelect ? categorySelect.value : (fd.get("category") || ""),
+    category,
     date: fd.get("date"),
-    note: fd.get("note") || "",
+    note: fd.get("note") || ""
   });
 
   save();
@@ -244,9 +174,7 @@ form.addEventListener("submit", (e) => {
 
   form.reset();
   dateInput.value = new Date().toISOString().split("T")[0];
-
-  // reset 會讓下拉回第一個：重新渲染確保一致
-  renderCategories(categorySelect?.value);
+  updateCustomCategoryVisibility(); // reset 後重設顯示狀態
 });
 
 clearAllBtn.addEventListener("click", () => {
@@ -262,72 +190,52 @@ function renderAll() {
   renderChart();
 }
 
-// ✅ 初始化：先同步類別，再渲染下拉，再渲染頁面
-syncCategoriesFromRecords();
-renderCategories();
 renderAll();
 
-// ===== 顏色選擇器功能（保留你同學版本：active / selected） =====
-(function () {
-  const colorPickerBtn = document.getElementById("color-picker-btn");
-  const colorPickerPanel = document.getElementById("color-picker-panel");
-  const colorOptions = document.querySelectorAll(".color-option");
+/* ===== 顏色選擇器功能（active / selected + bgColor） ===== */
+(function() {
+  const colorPickerBtn = document.getElementById('color-picker-btn');
+  const colorPickerPanel = document.getElementById('color-picker-panel');
+  const colorOptions = document.querySelectorAll('.color-option');
 
-  // 如果元素不存在，提早返回
-  if (!colorPickerBtn || !colorPickerPanel || colorOptions.length === 0) {
-    return;
-  }
+  if (!colorPickerBtn || !colorPickerPanel || colorOptions.length === 0) return;
 
-  // 定義允許的顏色列表
-  const allowedColors = Array.from(colorOptions).map((opt) =>
-    opt.getAttribute("data-color")
-  );
+  const allowedColors = Array.from(colorOptions).map(opt => opt.getAttribute('data-color'));
 
-  // 從 localStorage 讀取儲存的背景顏色
-  const savedColor = localStorage.getItem("bgColor");
+  const savedColor = localStorage.getItem('bgColor');
   if (savedColor && allowedColors.includes(savedColor)) {
     document.body.style.background = savedColor;
     updateSelectedOption(savedColor);
   }
 
-  // 切換顏色面板顯示/隱藏
-  colorPickerBtn.addEventListener("click", (e) => {
+  colorPickerBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    colorPickerPanel.classList.toggle("active");
+    colorPickerPanel.classList.toggle('active');
   });
 
-  // 點擊顏色選項
-  colorOptions.forEach((option) => {
-    option.addEventListener("click", (e) => {
+  colorOptions.forEach(option => {
+    option.addEventListener('click', (e) => {
       e.stopPropagation();
-      const color = option.getAttribute("data-color");
+      const color = option.getAttribute('data-color');
 
-      // 更改背景顏色
       document.body.style.background = color;
+      localStorage.setItem('bgColor', color);
 
-      // 儲存到 localStorage
-      localStorage.setItem("bgColor", color);
-
-      // 更新選中狀態
       updateSelectedOption(color);
-
-      // 關閉面板
-      colorPickerPanel.classList.remove("active");
+      colorPickerPanel.classList.remove('active');
     });
   });
 
-  // 點擊其他地方關閉面板
-  document.addEventListener("click", () => {
-    colorPickerPanel.classList.remove("active");
+  document.addEventListener('click', () => {
+    colorPickerPanel.classList.remove('active');
   });
 
-  // 更新選中的顏色選項
   function updateSelectedOption(color) {
-    colorOptions.forEach((opt) => {
-      if (opt.getAttribute("data-color") === color) {
-        opt.classList.add("selected");
+    colorOptions.forEach(opt => {
+      if (opt.getAttribute('data-color') === color) {
+        opt.classList.add('selected');
       } else {
-        opt.classList.remove("selected");
+        opt.classList.remove('selected');
       }
     });
   }
