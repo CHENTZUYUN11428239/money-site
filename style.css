@@ -90,11 +90,10 @@ th.num, td.num { text-align: right; }
 
 /* ===== Pie chart ===== */
 .chart-tabs {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
   margin: 16px 0;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
 .chart-tab {
@@ -117,6 +116,17 @@ th.num, td.num { text-align: right; }
   background: #3498db;
   border-color: #3498db;
   color: #fff;
+}
+
+.chart-selector {
+  padding: 10px;
+  border: 1px solid #e6e8ee;
+  border-radius: 12px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  font-weight: 500;
+  outline: none;
 }
 
 .chart-wrap{
