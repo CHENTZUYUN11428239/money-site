@@ -107,3 +107,67 @@ th.num, td.num { text-align: right; }
   display:block;
 }
 
+/* ===== 顏色選擇器 ===== */
+header {
+  position: relative;
+}
+
+.color-picker-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #fff;
+  border: 2px solid #e6e8ee;
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.color-picker-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.color-picker-panel {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  background: #fff;
+  border: 2px solid #e6e8ee;
+  border-radius: 12px;
+  padding: 12px;
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 1000;
+}
+
+.color-picker-panel.active {
+  display: grid;
+}
+
+.color-option {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  transition: all 0.2s ease;
+}
+
+.color-option:hover {
+  transform: scale(1.15);
+  border-color: #3498db;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+}
+
+.color-option.selected {
+  border-color: #3498db;
+  border-width: 3px;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
