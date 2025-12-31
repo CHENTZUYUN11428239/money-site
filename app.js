@@ -165,6 +165,11 @@ renderAll();
   const colorPickerPanel = document.getElementById('color-picker-panel');
   const colorOptions = document.querySelectorAll('.color-option');
   
+  // 如果元素不存在，提早返回
+  if (!colorPickerBtn || !colorPickerPanel || colorOptions.length === 0) {
+    return;
+  }
+  
   // 定義允許的顏色列表
   const allowedColors = Array.from(colorOptions).map(opt => opt.getAttribute('data-color'));
   
