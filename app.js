@@ -1,16 +1,13 @@
 const form = document.getElementById("tx-form");
 const tbody = document.getElementById("tx-tbody");
-const incomeEl = document.getElementById("total-income");
-const expenseEl = document.getElementById("total-expense");
+const totalIncomeEl = document.getElementById("total-income");
+const totalExpenseEl = document.getElementById("total-expense");
 const balanceEl = document.getElementById("balance");
 const dateInput = document.getElementById("date-input");
-const clearBtn = document.getElementById("clear-all-btn");
+const clearAllBtn = document.getElementById("clear-all-btn");
 
-const categorySelect = document.getElementById("category-select");
-const customCategory = document.getElementById("custom-category");
-
-const ctx = document.getElementById("pieChart").getContext("2d");
-let chart;
+const pieCanvas = document.getElementById("pieChart");
+let pieChart = null;
 
 dateInput.value = new Date().toISOString().split("T")[0];
 
@@ -20,47 +17,6 @@ function save() {
   localStorage.setItem("records", JSON.stringify(records));
 }
 
-function updateCustomInput() {
-  if (categorySelect.value === "其他") {
-    customCategory.style.display = "block";
-  } else {
-    customCategory.style.display = "none";
-    customCategory.value = "";
-  }
-}
-categorySelect.addEventListener("change", updateCustomInput);
-updateCustomInput();
-
-function totals() {
-  let i = 0, e = 0;
-  records.forEach(r => r.type === "收入" ? i += r.amount : e += r.amount);
-  return { i, e, b: i - e };
-}
-
-function renderSummary() {
-  const { i, e, b } = totals();
-  incomeEl.textContent = i;
-  expenseEl.textContent = e;
-  balanceEl.textContent = b;
-}
-
-function renderTable() {
-  tbody.innerHTML = "";
-  records.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${r.type}</td>
-      <td>${r.amount}</td>
-      <td>${r.category}</td>
-      <td>${r.note}</td>
-      <td><button onclick="del(${r.id})">刪除</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-//
 const fmt = (n) => Number(n || 0).toLocaleString("zh-TW");
 
 function computeTotals() {
@@ -112,27 +68,87 @@ tbody.addEventListener("click", (e) => {
   renderAll();
 });
 
-
 function renderChart() {
-  const { i, e } = totals();
-  if (chart) chart.destroy();
-
-  function renderChart() {
   if (!pieCanvas) return;                 // 保險：抓不到就不要畫
   const ctx = pieCanvas.getContext("2d");
   if (!ctx) return;
 
-  chart = new Chart(ctx, {
+  // Check if Chart.js is available
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded, skipping chart initialization');
+    return;
+  }
+
+  const { income, expense } = computeTotals();
+  const hasData = (income + expense) > 0;
+
+  const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
+  const data = hasData ? [income, expense] : [1, 1];
+  const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"]; // ✅ 顏色加深，避免看不到
+
+  if (pieChart) {
+    pieChart.data.labels = labels;
+    pieChart.data.datasets[0].data = data;
+    pieChart.data.datasets[0].backgroundColor = colors;
+    pieChart.update();
+    return;
+  }
+
+  pieChart = new Chart(ctx, {             // ✅ 用 ctx 建圖更穩
     type: "pie",
     data: {
-      labels: ["收入", "支出"],
+      labels,
       datasets: [{
-        data: [i || 1, e || 1],
-        backgroundColor: ["#8ee0b5", "#ff9a9a"]
+        data,
+        backgroundColor: colors,
+        borderWidth: 1
       }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,         // ✅ 會吃父層高度（剛剛 CSS 已固定）
+      plugins: {
+        legend: { position: "bottom" },
+        tooltip: {
+          callbacks: {
+            label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+          }
+        }
+      }
     }
   });
 }
+
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const fd = new FormData(form);
+
+  const amount = Number(fd.get("amount"));
+  if (!Number.isFinite(amount) || amount < 0) return;
+
+  records.push({
+    id: Date.now(),
+    type: fd.get("type"),
+    amount,
+    category: fd.get("category") || "",
+    date: fd.get("date"),
+    note: fd.get("note") || ""
+  });
+
+  save();
+  renderAll();
+
+  form.reset();
+  dateInput.value = new Date().toISOString().split("T")[0];
+});
+
+clearAllBtn.addEventListener("click", () => {
+  if (!confirm("確定清空所有紀錄？")) return;
+  records = [];
+  save();
+  renderAll();
+});
 
 function renderAll() {
   renderSummary();
@@ -140,53 +156,6 @@ function renderAll() {
   renderChart();
 }
 
-form.addEventListener("submit", e => {
-  e.preventDefault();
-
-  let category = categorySelect.value;
-  if (category === "其他") {
-    if (!customCategory.value.trim()) {
-      alert("請輸入其他分類");
-      return;
-    }
-    category = customCategory.value.trim(); // ✅ 關鍵
-  }
-
-  const fd = new FormData(form);
-
-  const amount = Number(fd.get("amount"));
-  if (!Number.isFinite(amount) || amount < 0) 
-return;
-  
-  records.push({
-    id: Date.now(),
-    type: fd.get("type"),
-    amount: Number(fd.get("amount")),
-    category,
-    date: fd.get("date"),
-    note: fd.get("note") || ""
-  });
-
-  save();
-  renderAll();
-  form.reset();
-  dateInput.value = new Date().toISOString().split("T")[0];
-  updateCustomInput();
-});
-
-clearBtn.onclick = () => {
-  if (confirm("確定清空？")) {
-    records = [];
-    save();
-    renderAll();
-  }
-};
-
-window.del = id => {
-  records = records.filter(r => r.id !== id);
-  save();
-  renderAll();
-};
 
 renderAll();
 
