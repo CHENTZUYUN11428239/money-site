@@ -152,3 +152,41 @@ function renderAll() {
 
 
 renderAll();
+/* ===== 背景顏色切換功能 ===== */
+const colorBtn = document.getElementById("color-picker-btn");
+const colorPanel = document.getElementById("color-picker-panel");
+const colorOptions = document.querySelectorAll(".color-option");
+
+// 開關面板
+colorBtn.addEventListener("click", () => {
+  colorPanel.classList.toggle("active");
+});
+
+// 點顏色
+colorOptions.forEach(opt => {
+  opt.addEventListener("click", () => {
+    const color = opt.dataset.color;
+    document.body.style.background = color;
+
+    // 記住顏色
+    localStorage.setItem("bgColor", color);
+
+    // 樣式選中
+    colorOptions.forEach(o => o.classList.remove("selected"));
+    opt.classList.add("selected");
+
+    colorPanel.classList.remove("active");
+  });
+});
+
+// 讀取已儲存顏色
+const savedColor = localStorage.getItem("bgColor");
+if (savedColor) {
+  document.body.style.background = savedColor;
+  colorOptions.forEach(opt => {
+    if (opt.dataset.color === savedColor) {
+      opt.classList.add("selected");
+    }
+  });
+}
+
