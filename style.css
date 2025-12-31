@@ -138,12 +138,12 @@ th.num, td.num { text-align: right; }
   background:#f7f8fa;
 
   position: relative;
-  height: 340px;          /* ✅ Chart.js 最吃這個：父層高度 */
+  height: 340px;
 }
 
 #pieChart{
   width:100% !important;
-  height:100% !important; /* ✅ 讓 canvas 填滿 chart-wrap */
+  height:100% !important;
   display:block;
 }
 
@@ -211,11 +211,7 @@ header {
   border-width: 3px;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
-/* ===== 自訂類別輸入框 ===== */
-.custom-category {
-  display: none;
-}
 
-.custom-category.show {
-  display: block;
-}
+/* ===== ✅ 自訂類別輸入框：顯示/隱藏 ===== */
+.custom-category { display: none; }
+.custom-category.show { display: block; }
