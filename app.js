@@ -78,7 +78,7 @@ function renderChart() {
     console.warn('Chart.js not loaded, skipping chart initialization');
     return;
   }
-
+  
   const { income, expense } = computeTotals();
   const hasData = (income + expense) > 0;
 
