@@ -14,7 +14,7 @@
       <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
     </header>
 
-    <!-- 圓餅圖區塊（取代月曆） -->
+    <!-- 圓餅圖區塊 -->
     <section class="box" id="chart-section">
       <h3>收支圓餅圖</h3>
       <p class="subtitle small">一眼看出收入與支出比例</p>
@@ -42,6 +42,7 @@
     <!-- 新增紀錄 -->
     <section class="box">
       <h3>新增收支紀錄</h3>
+
       <form id="tx-form">
         <div class="row">
           <select name="type" required>
@@ -51,14 +52,17 @@
 
           <input type="number" name="amount" placeholder="金額" min="0" step="1" required />
 
-          <select name="category" required>
-            <option>飲食</option>
-            <option>交通</option>
-            <option>娛樂</option>
-            <option>其他</option>
-          </select>
+          <!-- 分類下拉：交給 JS 動態產生 -->
+          <select name="category" id="category-select" required></select>
 
           <input type="date" name="date" id="date-input" required />
+        </div>
+
+        <!-- ✅ 你截圖那個「分類」附近：新增/刪除類別就在這排 -->
+        <div class="row category-manage">
+          <input type="text" id="new-category" placeholder="新增類別（例如：學用品/醫療）" />
+          <button class="btn ghost" type="button" id="add-category-btn">新增類別</button>
+          <button class="btn warn" type="button" id="remove-category-btn">刪除目前類別</button>
         </div>
 
         <textarea name="note" placeholder="備註（可留空）"></textarea>
