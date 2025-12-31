@@ -2,14 +2,9 @@ const form = document.getElementById("tx-form");
 const tbody = document.getElementById("tx-tbody");
 const totalIncomeEl = document.getElementById("total-income");
 const totalExpenseEl = document.getElementById("total-expense");
-const balanceEl = document. getElementById("balance");
+const balanceEl = document.getElementById("balance");
 const dateInput = document.getElementById("date-input");
 const clearAllBtn = document.getElementById("clear-all-btn");
-
-// 新增：類別選擇和自訂類別相關元素
-const categorySelect = document. getElementById("category-select");
-const customCategoryWrapper = document.getElementById("custom-category-wrapper");
-const customCategoryInput = document.getElementById("custom-category-input");
 
 const pieCanvas = document.getElementById("pieChart");
 let pieChart = null;
@@ -44,7 +39,7 @@ function renderTable() {
   tbody.innerHTML = "";
 
   // 依日期新到舊（同日用 id 排）
-  const sorted = [... records].sort((a, b) => {
+  const sorted = [...records].sort((a, b) => {
     if (a.date === b.date) return b.id - a.id;
     return (a.date > b.date) ? -1 : 1;
   });
@@ -53,7 +48,7 @@ function renderTable() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${r.date}</td>
-      <td>${r. type}</td>
+      <td>${r.type}</td>
       <td class="num">${fmt(r.amount)}</td>
       <td>${r.category || ""}</td>
       <td>${r.note || ""}</td>
@@ -82,12 +77,12 @@ function renderChart() {
   const hasData = (income + expense) > 0;
 
   const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
-  const data = hasData ? [income, expense] :  [1, 1];
+  const data = hasData ? [income, expense] : [1, 1];
   const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"]; // ✅ 顏色加深，避免看不到
 
   if (pieChart) {
     pieChart.data.labels = labels;
-    pieChart. data.datasets[0].data = data;
+    pieChart.data.datasets[0].data = data;
     pieChart.data.datasets[0].backgroundColor = colors;
     pieChart.update();
     return;
@@ -103,7 +98,7 @@ function renderChart() {
         borderWidth: 1
       }]
     },
-    options:  {
+    options: {
       responsive: true,
       maintainAspectRatio: false,         // ✅ 會吃父層高度（剛剛 CSS 已固定）
       plugins: {
@@ -118,38 +113,19 @@ function renderChart() {
   });
 }
 
-// 新增：監聽類別選擇變更
-categorySelect.addEventListener("change", (e) => {
-  if (e.target.value === "其他") {
-    customCategoryWrapper.style.display = "block";
-    customCategoryInput. focus();
-  } else {
-    customCategoryWrapper.style. display = "none";
-    customCategoryInput.value = "";
-  }
-});
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
   const fd = new FormData(form);
 
   const amount = Number(fd.get("amount"));
-  if (! Number.isFinite(amount) || amount < 0) return;
-
-  // 取得類別：如果選擇「其他」，則使用自訂類別
-  let category = fd.get("category");
-  if (category === "其他") {
-    const customCategory = customCategoryInput. value.trim();
-    if (customCategory) {
-      category = customCategory;
-    }
-  }
+  if (!Number.isFinite(amount) || amount < 0) return;
 
   records.push({
     id: Date.now(),
     type: fd.get("type"),
     amount,
-    category:  category || "",
+    category: fd.get("category") || "",
     date: fd.get("date"),
     note: fd.get("note") || ""
   });
@@ -159,14 +135,10 @@ form.addEventListener("submit", (e) => {
 
   form.reset();
   dateInput.value = new Date().toISOString().split("T")[0];
-  
-  // 重置自訂類別欄位
-  customCategoryWrapper.style.display = "none";
-  customCategoryInput.value = "";
 });
 
 clearAllBtn.addEventListener("click", () => {
-  if (! confirm("確定清空所有紀錄？")) return;
+  if (!confirm("確定清空所有紀錄？")) return;
   records = [];
   save();
   renderAll();
