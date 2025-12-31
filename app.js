@@ -13,6 +13,10 @@ let currentChartType = "total"; // 預設為總收支圓餅圖
 const monthSelector = document.getElementById("month-selector");
 const yearSelector = document.getElementById("year-selector");
 
+// ✅ 新增：分類下拉 + 自訂分類輸入框
+const categorySelect = document.getElementById("category-select");
+const customCategoryInput = document.getElementById("custom-category");
+
 dateInput.value = new Date().toISOString().split("T")[0];
 
 // 初始化月份和年份選擇器
@@ -31,12 +35,12 @@ for (let year = startYear; year <= endYear; year++) {
     const monthStr = String(month).padStart(2, '0');
     option.value = `${year}-${monthStr}`;
     option.textContent = `${year}年${month}月`;
-    
+
     // 預設選擇當前年月
     if (option.value === currentYearMonth) {
       option.selected = true;
     }
-    
+
     monthSelector.appendChild(option);
   }
 }
@@ -111,24 +115,24 @@ tbody.addEventListener("click", (e) => {
 });
 
 function renderChart() {
-  if (!pieCanvas) return;                 // 保險：抓不到就不要畫
+  if (!pieCanvas) return;
   const ctx = pieCanvas.getContext("2d");
   if (!ctx) return;
 
   // 根據圖表類型選擇過濾條件
   let filterFn = null;
   let chartTitle = "總收支圓餅圖";
-  
+
   if (currentChartType === "month") {
     const selectedYearMonth = monthSelector.value; // 格式：YYYY-MM
     const [year, month] = selectedYearMonth.split('-');
-    
+
     filterFn = (r) => r.date && r.date.startsWith(selectedYearMonth);
     chartTitle = `月收支圓餅圖 (${year}年${parseInt(month)}月)`;
   } else if (currentChartType === "year") {
     const selectedYear = yearSelector.value;
     const yearStr = String(selectedYear);
-    
+
     filterFn = (r) => r.date && r.date.startsWith(yearStr);
     chartTitle = `年收支圓餅圖 (${selectedYear})`;
   }
@@ -138,7 +142,7 @@ function renderChart() {
 
   const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
   const data = hasData ? [income, expense] : [1, 1];
-  const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"]; // ✅ 顏色加深，避免看不到
+  const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"];
 
   if (pieChart) {
     pieChart.data.labels = labels;
@@ -149,7 +153,7 @@ function renderChart() {
     return;
   }
 
-  pieChart = new Chart(ctx, {             // ✅ 用 ctx 建圖更穩
+  pieChart = new Chart(ctx, {
     type: "pie",
     data: {
       labels,
@@ -161,7 +165,7 @@ function renderChart() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,         // ✅ 會吃父層高度（剛剛 CSS 已固定）
+      maintainAspectRatio: false,
       plugins: {
         title: {
           display: true,
@@ -180,6 +184,32 @@ function renderChart() {
   });
 }
 
+// ✅ 新增：分類選到「其他」才顯示自訂輸入框
+function syncCustomCategoryUI() {
+  const isOther = categorySelect && categorySelect.value === "其他";
+  if (!customCategoryInput) return;
+
+  customCategoryInput.classList.toggle("show", !!isOther);
+
+  if (isOther) {
+    customCategoryInput.required = true;
+  } else {
+    customCategoryInput.required = false;
+    customCategoryInput.value = "";
+  }
+}
+
+if (categorySelect) {
+  categorySelect.addEventListener("change", () => {
+    syncCustomCategoryUI();
+    if (categorySelect.value === "其他" && customCategoryInput) {
+      customCategoryInput.focus();
+    }
+  });
+}
+
+// 初始化一次（避免一進來 UI 狀態不一致）
+syncCustomCategoryUI();
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -188,11 +218,19 @@ form.addEventListener("submit", (e) => {
   const amount = Number(fd.get("amount"));
   if (!Number.isFinite(amount) || amount < 0) return;
 
+  // ✅ 新增：category 決策（其他→用自訂）
+  let category = fd.get("category") || "";
+  if (category === "其他") {
+    const custom = (customCategoryInput?.value || "").trim();
+    if (!custom) return; // 沒填就不新增（避免存空類別）
+    category = custom;
+  }
+
   records.push({
     id: Date.now(),
     type: fd.get("type"),
     amount,
-    category: fd.get("category") || "",
+    category,
     date: fd.get("date"),
     note: fd.get("note") || ""
   });
@@ -202,6 +240,9 @@ form.addEventListener("submit", (e) => {
 
   form.reset();
   dateInput.value = new Date().toISOString().split("T")[0];
+
+  // ✅ 新增：reset 後 UI 回到正常（隱藏自訂類別）
+  syncCustomCategoryUI();
 });
 
 clearAllBtn.addEventListener("click", () => {
@@ -217,7 +258,6 @@ function renderAll() {
   renderChart();
 }
 
-
 renderAll();
 
 /* ===== 圖表類型切換功能 ===== */
@@ -228,7 +268,7 @@ chartTabs.forEach(tab => {
     // 更新活動狀態
     chartTabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
-    
+
     // 更新圖表類型並重新渲染
     currentChartType = tab.dataset.type;
     renderChart();
