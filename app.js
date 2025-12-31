@@ -10,7 +10,28 @@ const pieCanvas = document.getElementById("pieChart");
 let pieChart = null;
 let currentChartType = "total"; // 預設為總收支圓餅圖
 
+const monthSelector = document.getElementById("month-selector");
+const yearSelector = document.getElementById("year-selector");
+
 dateInput.value = new Date().toISOString().split("T")[0];
+
+// 初始化月份和年份選擇器
+const today = new Date();
+const currentMonth = today.getMonth() + 1;
+const currentYear = today.getFullYear();
+
+monthSelector.value = currentMonth;
+
+// 動態生成年份選項（從 2020 年到當前年份+1年）
+for (let year = 2020; year <= currentYear + 1; year++) {
+  const option = document.createElement("option");
+  option.value = year;
+  option.textContent = `${year}年`;
+  if (year === currentYear) {
+    option.selected = true;
+  }
+  yearSelector.appendChild(option);
+}
 
 let records = JSON.parse(localStorage.getItem("records")) || [];
 
@@ -80,19 +101,18 @@ function renderChart() {
   let chartTitle = "總收支圓餅圖";
   
   if (currentChartType === "month") {
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1; // 0-11 -> 1-12
-    const monthStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+    const selectedYear = yearSelector.value;
+    const selectedMonth = monthSelector.value;
+    const monthStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
     
     filterFn = (r) => r.date && r.date.startsWith(monthStr);
-    chartTitle = `月收支圓餅圖 (${currentYear}/${currentMonth})`;
+    chartTitle = `月收支圓餅圖 (${selectedYear}/${selectedMonth})`;
   } else if (currentChartType === "year") {
-    const currentYear = new Date().getFullYear();
-    const yearStr = String(currentYear);
+    const selectedYear = yearSelector.value;
+    const yearStr = String(selectedYear);
     
     filterFn = (r) => r.date && r.date.startsWith(yearStr);
-    chartTitle = `年收支圓餅圖 (${currentYear})`;
+    chartTitle = `年收支圓餅圖 (${selectedYear})`;
   }
 
   const { income, expense } = computeTotals(filterFn);
@@ -195,6 +215,19 @@ chartTabs.forEach(tab => {
     currentChartType = tab.dataset.type;
     renderChart();
   });
+});
+
+// 月份和年份選擇器事件監聽
+monthSelector.addEventListener("change", () => {
+  if (currentChartType === "month") {
+    renderChart();
+  }
+});
+
+yearSelector.addEventListener("change", () => {
+  if (currentChartType === "month" || currentChartType === "year") {
+    renderChart();
+  }
 });
 
 /* ===== 背景顏色切換功能 ===== */
