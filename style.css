@@ -96,10 +96,14 @@ th.num, td.num { text-align: right; }
   padding: 12px;
   border-radius:16px;
   background:#f7f8fa;
+
+  position: relative;
+  height: 340px;          /* ✅ Chart.js 最吃這個：父層高度 */
 }
 
 #pieChart{
-  width:100%;
-  height:320px;     /* Chart.js 會吃容器高度 */
+  width:100% !important;
+  height:100% !important; /* ✅ 讓 canvas 填滿 chart-wrap */
   display:block;
 }
+
