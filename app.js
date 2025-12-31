@@ -69,13 +69,16 @@ tbody.addEventListener("click", (e) => {
 });
 
 function renderChart() {
+  if (!pieCanvas) return;                 // 保險：抓不到就不要畫
+  const ctx = pieCanvas.getContext("2d");
+  if (!ctx) return;
+
   const { income, expense } = computeTotals();
   const hasData = (income + expense) > 0;
 
   const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
   const data = hasData ? [income, expense] : [1, 1];
-
-  const colors = hasData ? ["#d4f8e8", "#fddede"] : ["#eee", "#eee"];
+  const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"]; // ✅ 顏色加深，避免看不到
 
   if (pieChart) {
     pieChart.data.labels = labels;
@@ -85,7 +88,7 @@ function renderChart() {
     return;
   }
 
-  pieChart = new Chart(pieCanvas, {
+  pieChart = new Chart(ctx, {             // ✅ 用 ctx 建圖更穩
     type: "pie",
     data: {
       labels,
@@ -97,21 +100,19 @@ function renderChart() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: false,         // ✅ 會吃父層高度（剛剛 CSS 已固定）
       plugins: {
         legend: { position: "bottom" },
         tooltip: {
           callbacks: {
-            label: (ctx) => {
-              const val = hasData ? ctx.raw : 0;
-              return `${ctx.label}: ${fmt(val)}`;
-            }
+            label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
           }
         }
       }
     }
   });
 }
+
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -148,5 +149,6 @@ function renderAll() {
   renderTable();
   renderChart();
 }
+
 
 renderAll();
