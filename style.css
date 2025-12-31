@@ -118,10 +118,10 @@ header {
   right: 0;
   background: #fff;
   border: 2px solid #e6e8ee;
-  border-radius: 12px;
-  width: 44px;
-  height: 44px;
-  font-size: 24px;
+  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  font-size: 32px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -134,7 +134,7 @@ header {
 
 .color-picker-panel {
   position: absolute;
-  top: 52px;
+  top: 64px;
   right: 0;
   background: #fff;
   border: 2px solid #e6e8ee;
