@@ -1,7 +1,6 @@
 /* ===== 漢堡選單與側邊欄 ===== */
 const hamburgerBtn = document.getElementById("hamburger-btn");
 const sidebar = document.getElementById("sidebar");
-const sidebarClose = document.getElementById("sidebar-close");
 const sidebarOverlay = document.getElementById("sidebar-overlay");
 
 // 開啟側邊欄
@@ -29,9 +28,6 @@ hamburgerBtn.addEventListener("click", () => {
   }
 });
 
-// 關閉按鈕點擊事件
-sidebarClose.addEventListener("click", closeSidebar);
-
 // 遮罩點擊事件
 sidebarOverlay.addEventListener("click", closeSidebar);
 
@@ -40,6 +36,13 @@ document.querySelectorAll(".sidebar-link").forEach(link => {
   link.addEventListener("click", () => {
     closeSidebar();
   });
+});
+
+// 首頁連結點擊事件
+document.getElementById("home-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  closeSidebar();
 });
 
 /* ===== 使用者認證系統 ===== */
@@ -571,10 +574,127 @@ clearAllBtn.addEventListener("click", () => {
   renderAll();
 });
 
+/* ===== 篩選功能 ===== */
+let currentFilters = {
+  year: null,
+  month: null,
+  day: null,
+  category: null
+};
+
+// 更新類別篩選選項
+function updateCategoryFilter() {
+  const categorySelect = document.getElementById("filter-category");
+  const categories = new Set();
+  
+  // 收集所有出現過的類別
+  records.forEach(r => {
+    if (r.category) {
+      categories.add(r.category);
+    }
+  });
+  
+  // 清空並重建選項
+  categorySelect.innerHTML = '<option value="">全部類別</option>';
+  Array.from(categories).sort().forEach(cat => {
+    const option = document.createElement("option");
+    option.value = cat;
+    option.textContent = cat;
+    categorySelect.appendChild(option);
+  });
+}
+
+// 套用篩選
+function applyFilters() {
+  const year = document.getElementById("filter-year").value;
+  const month = document.getElementById("filter-month").value;
+  const day = document.getElementById("filter-day").value;
+  const category = document.getElementById("filter-category").value;
+  
+  currentFilters = {
+    year: year ? parseInt(year) : null,
+    month: month ? parseInt(month) : null,
+    day: day ? parseInt(day) : null,
+    category: category || null
+  };
+  
+  renderFilteredTable();
+}
+
+// 清除篩選
+function clearFilters() {
+  document.getElementById("filter-year").value = "";
+  document.getElementById("filter-month").value = "";
+  document.getElementById("filter-day").value = "";
+  document.getElementById("filter-category").value = "";
+  
+  currentFilters = {
+    year: null,
+    month: null,
+    day: null,
+    category: null
+  };
+  
+  renderTable();
+}
+
+// 渲染篩選後的表格
+function renderFilteredTable() {
+  tbody.innerHTML = "";
+  
+  // 篩選記錄
+  let filtered = [...records];
+  
+  // 日期篩選
+  if (currentFilters.year || currentFilters.month || currentFilters.day) {
+    filtered = filtered.filter(r => {
+      const dateParts = r.date.split("-");
+      const recordYear = parseInt(dateParts[0]);
+      const recordMonth = parseInt(dateParts[1]);
+      const recordDay = parseInt(dateParts[2]);
+      
+      if (currentFilters.year && recordYear !== currentFilters.year) return false;
+      if (currentFilters.month && recordMonth !== currentFilters.month) return false;
+      if (currentFilters.day && recordDay !== currentFilters.day) return false;
+      
+      return true;
+    });
+  }
+  
+  // 類別篩選
+  if (currentFilters.category) {
+    filtered = filtered.filter(r => r.category === currentFilters.category);
+  }
+  
+  // 依日期新到舊（同日用 id 排）
+  const sorted = filtered.sort((a, b) => {
+    if (a.date === b.date) return b.id - a.id;
+    return (a.date > b.date) ? -1 : 1;
+  });
+  
+  for (const r of sorted) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.date}</td>
+      <td>${r.type}</td>
+      <td class="num">${fmt(r.amount)}</td>
+      <td>${r.category || ""}</td>
+      <td>${r.note || ""}</td>
+      <td><button class="btn-del" data-id="${r.id}" type="button">刪除</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// 篩選按鈕事件
+document.getElementById("apply-filter-btn").addEventListener("click", applyFilters);
+document.getElementById("clear-filter-btn").addEventListener("click", clearFilters);
+
 function renderAll() {
   renderSummary();
   renderTable();
   renderChart();
+  updateCategoryFilter(); // 更新類別篩選選項
 }
 
 // 初始化：載入使用者資料
