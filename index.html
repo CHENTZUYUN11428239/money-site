@@ -8,6 +8,30 @@
 </head>
 
 <body>
+  <!-- 漢堡選單按鈕 -->
+  <button id="hamburger-btn" class="hamburger-btn" type="button" aria-label="開啟選單">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- 側邊欄 -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h2>選單</h2>
+      <button id="sidebar-close" class="sidebar-close" type="button" aria-label="關閉選單">&times;</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#chart-section" class="sidebar-link">📊 收支圓餅圖</a>
+      <a href="#summary" class="sidebar-link">💰 總覽</a>
+      <a href="#tx-form" class="sidebar-link">➕ 新增紀錄</a>
+      <a href="#records" class="sidebar-link">📝 收支紀錄</a>
+    </nav>
+  </div>
+
+  <!-- 側邊欄遮罩 -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
   <!-- 右上角登入/註冊區域 -->
   <div id="auth-section" class="auth-section">
     <button id="login-btn" class="auth-btn" type="button">登入</button>
