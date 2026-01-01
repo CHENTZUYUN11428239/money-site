@@ -19,10 +19,9 @@
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <h2>選單</h2>
-      <button id="sidebar-close" class="sidebar-close" type="button" aria-label="關閉選單">&times;</button>
     </div>
     <nav class="sidebar-nav">
-      <a href="#chart-section" class="sidebar-link">📊 收支圓餅圖</a>
+      <a href="#" class="sidebar-link" id="home-link">🏠 首頁</a>
       <a href="#summary" class="sidebar-link">💰 總覽</a>
       <a href="#tx-form" class="sidebar-link">➕ 新增紀錄</a>
       <a href="#records" class="sidebar-link">📝 收支紀錄</a>
@@ -142,6 +141,27 @@
     <!-- 收支紀錄 -->
     <section id="records" class="box">
       <h3>收支紀錄</h3>
+      
+      <!-- 篩選區域 -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label>日期篩選：</label>
+          <input type="number" id="filter-year" placeholder="年" min="2000" max="2100" class="filter-input" />
+          <input type="number" id="filter-month" placeholder="月" min="1" max="12" class="filter-input" />
+          <input type="number" id="filter-day" placeholder="日" min="1" max="31" class="filter-input" />
+        </div>
+        <div class="filter-group">
+          <label>類別篩選：</label>
+          <select id="filter-category" class="filter-select">
+            <option value="">全部類別</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button id="apply-filter-btn" class="btn primary" type="button">套用篩選</button>
+          <button id="clear-filter-btn" class="btn" type="button">清除篩選</button>
+        </div>
+      </div>
+      
       <div class="table-wrap">
         <table>
           <thead>
