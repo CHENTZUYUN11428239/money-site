@@ -1,3 +1,219 @@
+/* ===== 使用者認證系統 ===== */
+let currentUser = null;
+
+// 取得所有使用者帳號
+function getAllUsers() {
+  return JSON.parse(localStorage.getItem("users")) || {};
+}
+
+// 儲存使用者帳號
+function saveUsers(users) {
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+// 註冊新使用者
+function registerUser(username, password) {
+  const users = getAllUsers();
+  
+  if (users[username]) {
+    return { success: false, message: "此帳號已存在" };
+  }
+  
+  if (username.length < 4 || username.length > 20) {
+    return { success: false, message: "帳號長度須為 4-20 字元" };
+  }
+  
+  if (password.length < 6) {
+    return { success: false, message: "密碼長度至少需 6 字元" };
+  }
+  
+  users[username] = {
+    password: password,
+    createdAt: new Date().toISOString()
+  };
+  
+  saveUsers(users);
+  return { success: true, message: "註冊成功！" };
+}
+
+// 登入驗證
+function loginUser(username, password) {
+  const users = getAllUsers();
+  
+  if (!users[username]) {
+    return { success: false, message: "帳號不存在" };
+  }
+  
+  if (users[username].password !== password) {
+    return { success: false, message: "密碼錯誤" };
+  }
+  
+  currentUser = username;
+  localStorage.setItem("currentUser", username);
+  return { success: true, message: "登入成功！" };
+}
+
+// 登出
+function logoutUser() {
+  currentUser = null;
+  localStorage.removeItem("currentUser");
+}
+
+// 檢查登入狀態
+function checkLoginStatus() {
+  const savedUser = localStorage.getItem("currentUser");
+  if (savedUser) {
+    const users = getAllUsers();
+    if (users[savedUser]) {
+      currentUser = savedUser;
+      return true;
+    }
+  }
+  return false;
+}
+
+// 取得當前使用者的記錄
+function getUserRecords() {
+  if (!currentUser) return [];
+  const userDataKey = `records_${currentUser}`;
+  return JSON.parse(localStorage.getItem(userDataKey)) || [];
+}
+
+// 儲存當前使用者的記錄
+function saveUserRecords(records) {
+  if (!currentUser) return;
+  const userDataKey = `records_${currentUser}`;
+  localStorage.setItem(userDataKey, JSON.stringify(records));
+}
+
+// UI 更新
+function updateAuthUI() {
+  const loginBtn = document.getElementById("login-btn");
+  const registerBtn = document.getElementById("register-btn");
+  const userInfo = document.getElementById("user-info");
+  const usernameDisplay = document.getElementById("username-display");
+  
+  if (currentUser) {
+    loginBtn.style.display = "none";
+    registerBtn.style.display = "none";
+    userInfo.style.display = "flex";
+    usernameDisplay.textContent = currentUser;
+  } else {
+    loginBtn.style.display = "block";
+    registerBtn.style.display = "block";
+    userInfo.style.display = "none";
+  }
+}
+
+// Modal 控制
+const loginModal = document.getElementById("login-modal");
+const registerModal = document.getElementById("register-modal");
+const loginBtn = document.getElementById("login-btn");
+const registerBtn = document.getElementById("register-btn");
+const closeLogin = document.getElementById("close-login");
+const closeRegister = document.getElementById("close-register");
+const logoutBtn = document.getElementById("logout-btn");
+
+loginBtn.addEventListener("click", () => {
+  loginModal.style.display = "block";
+  document.getElementById("login-message").textContent = "";
+});
+
+registerBtn.addEventListener("click", () => {
+  registerModal.style.display = "block";
+  document.getElementById("register-message").textContent = "";
+});
+
+closeLogin.addEventListener("click", () => {
+  loginModal.style.display = "none";
+});
+
+closeRegister.addEventListener("click", () => {
+  registerModal.style.display = "none";
+});
+
+window.addEventListener("click", (e) => {
+  if (e.target === loginModal) {
+    loginModal.style.display = "none";
+  }
+  if (e.target === registerModal) {
+    registerModal.style.display = "none";
+  }
+});
+
+// 登入表單
+document.getElementById("login-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const username = document.getElementById("login-username").value.trim();
+  const password = document.getElementById("login-password").value;
+  const messageEl = document.getElementById("login-message");
+  
+  const result = loginUser(username, password);
+  
+  if (result.success) {
+    messageEl.textContent = result.message;
+    messageEl.className = "form-message success";
+    setTimeout(() => {
+      loginModal.style.display = "none";
+      updateAuthUI();
+      loadUserData();
+    }, 1000);
+  } else {
+    messageEl.textContent = result.message;
+    messageEl.className = "form-message error";
+  }
+});
+
+// 註冊表單
+document.getElementById("register-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const username = document.getElementById("register-username").value.trim();
+  const password = document.getElementById("register-password").value;
+  const confirmPassword = document.getElementById("register-password-confirm").value;
+  const messageEl = document.getElementById("register-message");
+  
+  if (password !== confirmPassword) {
+    messageEl.textContent = "兩次密碼輸入不一致";
+    messageEl.className = "form-message error";
+    return;
+  }
+  
+  const result = registerUser(username, password);
+  
+  if (result.success) {
+    messageEl.textContent = result.message;
+    messageEl.className = "form-message success";
+    document.getElementById("register-form").reset();
+    setTimeout(() => {
+      registerModal.style.display = "none";
+    }, 1500);
+  } else {
+    messageEl.textContent = result.message;
+    messageEl.className = "form-message error";
+  }
+});
+
+// 登出按鈕
+logoutBtn.addEventListener("click", () => {
+  if (confirm("確定要登出嗎？")) {
+    logoutUser();
+    updateAuthUI();
+    records = [];
+    renderAll();
+  }
+});
+
+// 載入使用者資料
+function loadUserData() {
+  records = getUserRecords();
+  renderAll();
+}
+
+// 初始化認證狀態
+checkLoginStatus();
+updateAuthUI();
+
+/* ===== 原有程式碼 ===== */
 const form = document.getElementById("tx-form");
 const tbody = document.getElementById("tx-tbody");
 const totalIncomeEl = document.getElementById("total-income");
@@ -100,10 +316,15 @@ for (let year = startYear; year <= endYear; year++) {
   yearSelector.appendChild(option);
 }
 
-let records = JSON.parse(localStorage.getItem("records")) || [];
+let records = [];
 
 function save() {
-  localStorage.setItem("records", JSON.stringify(records));
+  if (currentUser) {
+    saveUserRecords(records);
+  } else {
+    // 如果未登入，不儲存資料
+    localStorage.setItem("records", JSON.stringify(records));
+  }
 }
 
 const fmt = (n) => Number(n || 0).toLocaleString("zh-TW");
@@ -257,6 +478,14 @@ syncCustomCategoryUI();
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
+  
+  // 檢查是否已登入
+  if (!currentUser) {
+    alert("請先登入才能新增紀錄");
+    loginModal.style.display = "block";
+    return;
+  }
+  
   const fd = new FormData(form);
 
   const amount = Number(fd.get("amount"));
@@ -290,6 +519,10 @@ form.addEventListener("submit", (e) => {
 });
 
 clearAllBtn.addEventListener("click", () => {
+  if (!currentUser) {
+    alert("請先登入");
+    return;
+  }
   if (!confirm("確定清空所有紀錄？")) return;
   records = [];
   save();
@@ -302,7 +535,12 @@ function renderAll() {
   renderChart();
 }
 
-renderAll();
+// 初始化：載入使用者資料
+if (currentUser) {
+  loadUserData();
+} else {
+  renderAll();
+}
 
 /* ===== 圖表類型切換功能 ===== */
 const chartTabs = document.querySelectorAll(".chart-tab");

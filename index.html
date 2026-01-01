@@ -8,6 +8,16 @@
 </head>
 
 <body>
+  <!-- 右上角登入/註冊區域 -->
+  <div id="auth-section" class="auth-section">
+    <button id="login-btn" class="auth-btn" type="button">登入</button>
+    <button id="register-btn" class="auth-btn" type="button">註冊</button>
+    <div id="user-info" class="user-info" style="display: none;">
+      <span id="username-display"></span>
+      <button id="logout-btn" class="auth-btn logout" type="button">登出</button>
+    </div>
+  </div>
+
   <div class="container">
     <header>
       <h1>零用錢記帳小管家</h1>
@@ -124,6 +134,35 @@
         </table>
       </div>
     </section>
+  </div>
+
+  <!-- 登入 Modal -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-login">&times;</span>
+      <h2>登入</h2>
+      <form id="login-form">
+        <input type="text" id="login-username" placeholder="帳號" required autocomplete="username" />
+        <input type="password" id="login-password" placeholder="密碼" required autocomplete="current-password" />
+        <button type="submit" class="btn primary">登入</button>
+      </form>
+      <p class="form-message" id="login-message"></p>
+    </div>
+  </div>
+
+  <!-- 註冊 Modal -->
+  <div id="register-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-register">&times;</span>
+      <h2>註冊</h2>
+      <form id="register-form">
+        <input type="text" id="register-username" placeholder="帳號（4-20字元）" required autocomplete="username" />
+        <input type="password" id="register-password" placeholder="密碼（至少6字元）" required autocomplete="new-password" />
+        <input type="password" id="register-password-confirm" placeholder="確認密碼" required autocomplete="new-password" />
+        <button type="submit" class="btn primary">註冊</button>
+      </form>
+      <p class="form-message" id="register-message"></p>
+    </div>
   </div>
 
   <!-- Chart.js -->
