@@ -425,45 +425,52 @@ tbody.addEventListener("click", (e) => {
 });
 
 function renderChart() {
+  // Check if Chart.js is loaded
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded, skipping chart render');
+    return;
+  }
+  
   if (!pieCanvas) return;
   const ctx = pieCanvas.getContext("2d");
   if (!ctx) return;
 
-  // 根據圖表類型選擇過濾條件
-  let filterFn = null;
-  let chartTitle = "總收支圓餅圖";
+  try {
+    // 根據圖表類型選擇過濾條件
+    let filterFn = null;
+    let chartTitle = "總收支圓餅圖";
 
-  if (currentChartType === "month") {
-    const selectedYearMonth = monthSelector.value; // 格式：YYYY-MM
-    const [year, month] = selectedYearMonth.split('-');
+    if (currentChartType === "month") {
+      const selectedYearMonth = monthSelector.value; // 格式：YYYY-MM
+      const [year, month] = selectedYearMonth.split('-');
 
-    filterFn = (r) => r.date && r.date.startsWith(selectedYearMonth);
-    chartTitle = `月收支圓餅圖 (${year}年${parseInt(month)}月)`;
-  } else if (currentChartType === "year") {
-    const selectedYear = yearSelector.value;
-    const yearStr = String(selectedYear);
+      filterFn = (r) => r.date && r.date.startsWith(selectedYearMonth);
+      chartTitle = `月收支圓餅圖 (${year}年${parseInt(month)}月)`;
+    } else if (currentChartType === "year") {
+      const selectedYear = yearSelector.value;
+      const yearStr = String(selectedYear);
 
-    filterFn = (r) => r.date && r.date.startsWith(yearStr);
-    chartTitle = `年收支圓餅圖 (${selectedYear})`;
-  }
+      filterFn = (r) => r.date && r.date.startsWith(yearStr);
+      chartTitle = `年收支圓餅圖 (${selectedYear})`;
+    }
 
-  const { income, expense } = computeTotals(filterFn);
-  const hasData = (income + expense) > 0;
+    const { income, expense } = computeTotals(filterFn);
+    const hasData = (income + expense) > 0;
 
-  const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
-  const data = hasData ? [income, expense] : [1, 1];
-  const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"];
+    const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
+    const data = hasData ? [income, expense] : [1, 1];
+    const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"];
 
-  if (pieChart) {
-    pieChart.data.labels = labels;
-    pieChart.data.datasets[0].data = data;
-    pieChart.data.datasets[0].backgroundColor = colors;
-    pieChart.options.plugins.title.text = chartTitle;
-    pieChart.update();
-    return;
-  }
+    if (pieChart) {
+      pieChart.data.labels = labels;
+      pieChart.data.datasets[0].data = data;
+      pieChart.data.datasets[0].backgroundColor = colors;
+      pieChart.options.plugins.title.text = chartTitle;
+      pieChart.update();
+      return;
+    }
 
-  pieChart = new Chart(ctx, {
+    pieChart = new Chart(ctx, {
     type: "pie",
     data: {
       labels,
@@ -492,6 +499,9 @@ function renderChart() {
       }
     }
   });
+  } catch (error) {
+    console.error('Error rendering chart:', error);
+  }
 }
 
 // ✅ 新增：分類選到「其他」才顯示自訂輸入框
