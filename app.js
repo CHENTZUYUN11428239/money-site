@@ -1,3 +1,47 @@
+/* ===== 漢堡選單與側邊欄 ===== */
+const hamburgerBtn = document.getElementById("hamburger-btn");
+const sidebar = document.getElementById("sidebar");
+const sidebarClose = document.getElementById("sidebar-close");
+const sidebarOverlay = document.getElementById("sidebar-overlay");
+
+// 開啟側邊欄
+function openSidebar() {
+  sidebar.classList.add("active");
+  sidebarOverlay.classList.add("active");
+  hamburgerBtn.classList.add("active");
+  document.body.style.overflow = "hidden"; // 防止背景滾動
+}
+
+// 關閉側邊欄
+function closeSidebar() {
+  sidebar.classList.remove("active");
+  sidebarOverlay.classList.remove("active");
+  hamburgerBtn.classList.remove("active");
+  document.body.style.overflow = ""; // 恢復滾動
+}
+
+// 漢堡按鈕點擊事件（切換開關）
+hamburgerBtn.addEventListener("click", () => {
+  if (sidebar.classList.contains("active")) {
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
+});
+
+// 關閉按鈕點擊事件
+sidebarClose.addEventListener("click", closeSidebar);
+
+// 遮罩點擊事件
+sidebarOverlay.addEventListener("click", closeSidebar);
+
+// 側邊欄連結點擊後自動關閉
+document.querySelectorAll(".sidebar-link").forEach(link => {
+  link.addEventListener("click", () => {
+    closeSidebar();
+  });
+});
+
 /* ===== 使用者認證系統 ===== */
 let currentUser = null;
 
