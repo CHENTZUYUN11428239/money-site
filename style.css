@@ -57,20 +57,20 @@ body {
 
 /* ===== 側邊欄 ===== */
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: -300px;
-  width: 280px;
-  height: 100%;
-  background: #fff;
-  box-shadow: 2px 0 12px rgba(0,0,0,0.1);
-  z-index: 2100;
-  transition: left 0.3s ease;
-  overflow-y: auto;
+  position: fixed !important;
+  top: 0 !important;
+  left: -300px !important;
+  width: 280px !important;
+  height: 100% !important;
+  background: #fff !important;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.1) !important;
+  z-index: 2100 !important;
+  transition: left 0.3s ease !important;
+  overflow-y: auto !important;
 }
 
 .sidebar.active {
-  left: 0;
+  left: 0 !important;
 }
 
 .sidebar-header {
@@ -137,11 +137,13 @@ body {
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
+  pointer-events: none;
 }
 
 .sidebar-overlay.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .container { max-width: 1100px; margin:auto; padding: 40px 20px 80px; }
