@@ -321,10 +321,8 @@ let records = [];
 function save() {
   if (currentUser) {
     saveUserRecords(records);
-  } else {
-    // 如果未登入，不儲存資料
-    localStorage.setItem("records", JSON.stringify(records));
   }
+  // 如果未登入，不儲存資料（避免資料混淆）
 }
 
 const fmt = (n) => Number(n || 0).toLocaleString("zh-TW");
