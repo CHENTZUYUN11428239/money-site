@@ -452,12 +452,13 @@ header {
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
-/* ===== 新增群組按鈕 (在群組頁面內容中) ===== */
-.add-group-btn {
-  display: block;
-  width: 100%;
-  max-width: 300px;
-  margin: 20px auto;
+/* ===== 新增群組按鈕 (固定在右側邊欄) ===== */
+.add-group-btn-sidebar {
+  position: fixed !important;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 900;
   padding: 16px 24px;
   background: #3498db;
   color: #fff;
@@ -468,11 +469,14 @@ header {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 4px;
 }
 
-.add-group-btn:hover {
+.add-group-btn-sidebar:hover {
   background: #2980b9;
-  transform: translateY(-2px);
+  transform: translateY(-50%) translateX(-5px);
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
 }
 
