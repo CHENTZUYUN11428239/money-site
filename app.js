@@ -905,6 +905,36 @@ function saveRecordsGroups() {
 // 設定今天日期（群組頁面）
 dateInputGroups.valueAsDate = new Date();
 
+// 初始化月份和年份選擇器（群組頁面）
+for (let year = startYear; year <= endYear; year++) {
+  for (let month = 1; month <= 12; month++) {
+    const option = document.createElement("option");
+    const monthStr = String(month).padStart(2, '0');
+    option.value = `${year}-${monthStr}`;
+    option.textContent = `${year}年${month}月`;
+
+    // 預設選擇當前年月
+    if (option.value === currentYearMonth) {
+      option.selected = true;
+      selectedMonthGroups = option.value;
+    }
+
+    monthSelectorGroups.appendChild(option);
+  }
+}
+
+// 動態生成年份選項（從 2020 年到當前年份+1年）- 群組頁面
+for (let year = startYear; year <= endYear; year++) {
+  const option = document.createElement("option");
+  option.value = year;
+  option.textContent = `${year}年`;
+  if (year === currentYear) {
+    option.selected = true;
+    selectedYearGroups = year;
+  }
+  yearSelectorGroups.appendChild(option);
+}
+
 // 自訂類別處理（群組頁面）
 categorySelectGroups.addEventListener("change", () => {
   if (categorySelectGroups.value === "其他") {
@@ -1101,58 +1131,20 @@ chartTabsGroups.forEach(tab => {
   });
 });
 
-// 月份選擇器（群組頁面）
-function populateMonthSelectorGroups() {
-  const months = new Set();
-  recordsGroups.forEach(r => {
-    const ym = r.date.substring(0, 7);
-    months.add(ym);
-  });
-  
-  monthSelectorGroups.innerHTML = "";
-  Array.from(months).sort().reverse().forEach(ym => {
-    const opt = document.createElement("option");
-    opt.value = ym;
-    opt.textContent = ym;
-    monthSelectorGroups.appendChild(opt);
-  });
-  
-  if (months.size > 0) {
-    selectedMonthGroups = Array.from(months).sort().reverse()[0];
-    monthSelectorGroups.value = selectedMonthGroups;
-  }
-}
-
+// 月份選擇器變更事件（群組頁面）
 monthSelectorGroups.addEventListener("change", () => {
   selectedMonthGroups = monthSelectorGroups.value;
-  renderChartGroups();
+  if (chartTypeGroups === "month") {
+    renderChartGroups();
+  }
 });
 
-// 年份選擇器（群組頁面）
-function populateYearSelectorGroups() {
-  const years = new Set();
-  recordsGroups.forEach(r => {
-    const y = r.date.substring(0, 4);
-    years.add(y);
-  });
-  
-  yearSelectorGroups.innerHTML = "";
-  Array.from(years).sort().reverse().forEach(y => {
-    const opt = document.createElement("option");
-    opt.value = y;
-    opt.textContent = y + "年";
-    yearSelectorGroups.appendChild(opt);
-  });
-  
-  if (years.size > 0) {
-    selectedYearGroups = Array.from(years).sort().reverse()[0];
-    yearSelectorGroups.value = selectedYearGroups;
-  }
-}
-
+// 年份選擇器變更事件（群組頁面）
 yearSelectorGroups.addEventListener("change", () => {
   selectedYearGroups = yearSelectorGroups.value;
-  renderChartGroups();
+  if (chartTypeGroups === "year") {
+    renderChartGroups();
+  }
 });
 
 // 篩選功能（群組頁面）
@@ -1204,8 +1196,6 @@ function initGroupsPage() {
   renderRecordsGroups();
   updateSummaryGroups();
   renderChartGroups();
-  populateMonthSelectorGroups();
-  populateYearSelectorGroups();
   updateFilterCategoryOptionsGroups();
 }
 
