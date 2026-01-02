@@ -6,6 +6,11 @@ body {
   color: #333;
 }
 
+/* ===== 頁面視圖 ===== */
+.page-view {
+  min-height: 100vh;
+}
+
 /* ===== 漢堡選單按鈕 ===== */
 .hamburger-btn {
   position: fixed;
