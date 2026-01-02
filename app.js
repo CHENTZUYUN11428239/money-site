@@ -1,7 +1,6 @@
 /* ===== 漢堡選單與側邊欄 ===== */
 const hamburgerBtn = document.getElementById("hamburger-btn");
 const sidebar = document.getElementById("sidebar");
-const sidebarClose = document.getElementById("sidebar-close");
 const sidebarOverlay = document.getElementById("sidebar-overlay");
 
 // 開啟側邊欄
@@ -28,9 +27,6 @@ hamburgerBtn.addEventListener("click", () => {
     openSidebar();
   }
 });
-
-// 側邊欄關閉按鈕點擊事件
-sidebarClose.addEventListener("click", closeSidebar);
 
 // 遮罩點擊事件
 sidebarOverlay.addEventListener("click", closeSidebar);
