@@ -161,6 +161,17 @@ const closeLogin = document.getElementById("close-login");
 const closeRegister = document.getElementById("close-register");
 const logoutBtn = document.getElementById("logout-btn");
 
+// 登出按鈕事件
+logoutBtn.addEventListener("click", () => {
+  if (confirm("確定要登出嗎？")) {
+    logoutUser();
+    updateAuthUI();
+    renderRecords();
+    renderSummary();
+    alert("已成功登出");
+  }
+});
+
 loginBtn.addEventListener("click", () => {
   loginModal.style.display = "block";
   document.getElementById("login-message").textContent = "";
@@ -237,16 +248,6 @@ document.getElementById("register-form").addEventListener("submit", (e) => {
   } else {
     messageEl.textContent = result.message;
     messageEl.className = "form-message error";
-  }
-});
-
-// 登出按鈕
-logoutBtn.addEventListener("click", () => {
-  if (confirm("確定要登出嗎？")) {
-    logoutUser();
-    updateAuthUI();
-    records = [];
-    renderAll();
   }
 });
 
