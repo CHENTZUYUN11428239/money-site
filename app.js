@@ -800,3 +800,394 @@ if (savedColor) {
     }
   });
 }
+
+/* ===== 群組頁面功能（複製個人頁面） ===== */
+// Note: This is a complete duplicate of the personal page functionality for groups page
+// In the future, this could be refactored to share code between pages
+
+// 群組頁面的顏色選擇器
+const colorPickerBtnGroups = document.getElementById("color-picker-btn-groups");
+const colorPickerPanelGroups = document.getElementById("color-picker-panel-groups");
+const colorOptionsGroups = document.querySelectorAll("#color-picker-panel-groups .color-option");
+
+colorPickerBtnGroups.addEventListener("click", (e) => {
+  e.stopPropagation();
+  colorPickerPanelGroups.classList.toggle("active");
+});
+
+colorOptionsGroups.forEach(option => {
+  option.addEventListener("click", () => {
+    const color = option.dataset.color;
+    document.body.style.background = color;
+    localStorage.setItem("bgColor", color);
+    
+    colorOptionsGroups.forEach(opt => opt.classList.remove("selected"));
+    option.classList.add("selected");
+    
+    colorPickerPanelGroups.classList.remove("active");
+  });
+});
+
+// 群組頁面的表單和資料管理
+const formGroups = document.getElementById("tx-form-groups");
+const tbodyGroups = document.getElementById("tx-tbody-groups");
+const totalIncomeElGroups = document.getElementById("total-income-groups");
+const totalExpenseElGroups = document.getElementById("total-expense-groups");
+const balanceElGroups = document.getElementById("balance-groups");
+const dateInputGroups = document.getElementById("date-input-groups");
+const clearAllBtnGroups = document.getElementById("clear-all-btn-groups");
+
+const pieCanvasGroups = document.getElementById("pieChart-groups");
+const chartTabsGroups = document.querySelectorAll("#chart-section-groups .chart-tab");
+const monthSelectorGroups = document.getElementById("month-selector-groups");
+const yearSelectorGroups = document.getElementById("year-selector-groups");
+
+const categorySelectGroups = document.getElementById("category-select-groups");
+const customCategoryInputGroups = document.getElementById("custom-category-groups");
+
+let recordsGroups = [];
+let pieChartGroups = null;
+let chartTypeGroups = "total";
+let selectedMonthGroups = "";
+let selectedYearGroups = "";
+
+// 取得當前登入使用者的群組紀錄
+function getGroupsRecordsKey() {
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) return null;
+  return `records_groups_${currentUser}`;
+}
+
+// 載入群組紀錄
+function loadRecordsGroups() {
+  const key = getGroupsRecordsKey();
+  if (!key) {
+    recordsGroups = [];
+    return;
+  }
+  const data = localStorage.getItem(key);
+  recordsGroups = data ? JSON.parse(data) : [];
+}
+
+// 儲存群組紀錄
+function saveRecordsGroups() {
+  const key = getGroupsRecordsKey();
+  if (!key) return;
+  localStorage.setItem(key, JSON.stringify(recordsGroups));
+}
+
+// 設定今天日期（群組頁面）
+dateInputGroups.valueAsDate = new Date();
+
+// 自訂類別處理（群組頁面）
+categorySelectGroups.addEventListener("change", () => {
+  if (categorySelectGroups.value === "其他") {
+    customCategoryInputGroups.style.display = "block";
+    customCategoryInputGroups.required = true;
+  } else {
+    customCategoryInputGroups.style.display = "none";
+    customCategoryInputGroups.required = false;
+    customCategoryInputGroups.value = "";
+  }
+});
+
+// 新增紀錄（群組頁面）
+formGroups.addEventListener("submit", (e) => {
+  e.preventDefault();
+  
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) {
+    alert("請先登入才能新增紀錄！");
+    return;
+  }
+  
+  const fd = new FormData(formGroups);
+  let category = fd.get("category");
+  
+  if (category === "其他" && customCategoryInputGroups.value.trim()) {
+    category = customCategoryInputGroups.value.trim();
+  }
+  
+  const record = {
+    id: Date.now(),
+    type: fd.get("type"),
+    amount: parseFloat(fd.get("amount")),
+    category: category,
+    date: fd.get("date"),
+    note: fd.get("note") || ""
+  };
+  
+  recordsGroups.push(record);
+  saveRecordsGroups();
+  formGroups.reset();
+  dateInputGroups.valueAsDate = new Date();
+  customCategoryInputGroups.style.display = "none";
+  
+  renderRecordsGroups();
+  updateSummaryGroups();
+  renderChartGroups();
+  updateFilterCategoryOptionsGroups();
+});
+
+// 刪除紀錄（群組頁面）
+function deleteRecordGroups(id) {
+  if (!confirm("確定要刪除此筆紀錄嗎？")) return;
+  recordsGroups = recordsGroups.filter(r => r.id !== id);
+  saveRecordsGroups();
+  renderRecordsGroups();
+  updateSummaryGroups();
+  renderChartGroups();
+  updateFilterCategoryOptionsGroups();
+}
+
+// 渲染紀錄列表（群組頁面）
+function renderRecordsGroups(filteredRecords = null) {
+  const dataToRender = filteredRecords || recordsGroups;
+  const sorted = dataToRender.slice().sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
+  });
+  
+  tbodyGroups.innerHTML = "";
+  sorted.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.date}</td>
+      <td>${r.type}</td>
+      <td class="num ${r.type === '支出' ? 'expense' : 'income'}">
+        ${r.type === '支出' ? '-' : '+'}${r.amount}
+      </td>
+      <td>${r.category}</td>
+      <td>${r.note}</td>
+      <td><button class="btn danger small" onclick="deleteRecordGroups(${r.id})">刪除</button></td>
+    `;
+    tbodyGroups.appendChild(tr);
+  });
+}
+
+// 更新總覽（群組頁面）
+function updateSummaryGroups() {
+  const income = recordsGroups.filter(r => r.type === "收入").reduce((sum, r) => sum + r.amount, 0);
+  const expense = recordsGroups.filter(r => r.type === "支出").reduce((sum, r) => sum + r.amount, 0);
+  const balance = income - expense;
+  
+  totalIncomeElGroups.textContent = income.toLocaleString();
+  totalExpenseElGroups.textContent = expense.toLocaleString();
+  balanceElGroups.textContent = balance.toLocaleString();
+  
+  if (balance > 0) {
+    balanceElGroups.className = "kpi income";
+  } else if (balance < 0) {
+    balanceElGroups.className = "kpi expense";
+  } else {
+    balanceElGroups.className = "kpi balance";
+  }
+}
+
+// 清空所有紀錄（群組頁面）
+clearAllBtnGroups.addEventListener("click", () => {
+  if (!confirm("確定要清空所有群組紀錄嗎？此操作無法復原！")) return;
+  recordsGroups = [];
+  saveRecordsGroups();
+  renderRecordsGroups();
+  updateSummaryGroups();
+  renderChartGroups();
+  updateFilterCategoryOptionsGroups();
+});
+
+// 渲染圖表（群組頁面）
+function renderChartGroups() {
+  if (!window.Chart) {
+    console.warn("Chart.js not loaded");
+    return;
+  }
+  
+  try {
+    let dataToChart = recordsGroups;
+    
+    if (chartTypeGroups === "month" && selectedMonthGroups) {
+      dataToChart = recordsGroups.filter(r => r.date.startsWith(selectedMonthGroups));
+    } else if (chartTypeGroups === "year" && selectedYearGroups) {
+      dataToChart = recordsGroups.filter(r => r.date.startsWith(selectedYearGroups));
+    }
+    
+    const categoryMap = {};
+    dataToChart.forEach(r => {
+      if (!categoryMap[r.category]) {
+        categoryMap[r.category] = 0;
+      }
+      categoryMap[r.category] += r.amount;
+    });
+    
+    const labels = Object.keys(categoryMap);
+    const data = Object.values(categoryMap);
+    
+    if (pieChartGroups) {
+      pieChartGroups.destroy();
+    }
+    
+    const ctx = pieCanvasGroups.getContext("2d");
+    pieChartGroups = new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: [
+            "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+            "#9966FF", "#FF9F40", "#FF6384", "#C9CBCF"
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom" }
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error rendering groups chart:", error);
+  }
+}
+
+// 圖表切換（群組頁面）
+chartTabsGroups.forEach(tab => {
+  tab.addEventListener("click", () => {
+    chartTabsGroups.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    
+    const type = tab.dataset.type;
+    chartTypeGroups = type;
+    
+    if (type === "month") {
+      monthSelectorGroups.style.display = "inline-block";
+      yearSelectorGroups.style.display = "none";
+    } else if (type === "year") {
+      monthSelectorGroups.style.display = "none";
+      yearSelectorGroups.style.display = "inline-block";
+    } else {
+      monthSelectorGroups.style.display = "none";
+      yearSelectorGroups.style.display = "none";
+    }
+    
+    renderChartGroups();
+  });
+});
+
+// 月份選擇器（群組頁面）
+function populateMonthSelectorGroups() {
+  const months = new Set();
+  recordsGroups.forEach(r => {
+    const ym = r.date.substring(0, 7);
+    months.add(ym);
+  });
+  
+  monthSelectorGroups.innerHTML = "";
+  Array.from(months).sort().reverse().forEach(ym => {
+    const opt = document.createElement("option");
+    opt.value = ym;
+    opt.textContent = ym;
+    monthSelectorGroups.appendChild(opt);
+  });
+  
+  if (months.size > 0) {
+    selectedMonthGroups = Array.from(months).sort().reverse()[0];
+    monthSelectorGroups.value = selectedMonthGroups;
+  }
+}
+
+monthSelectorGroups.addEventListener("change", () => {
+  selectedMonthGroups = monthSelectorGroups.value;
+  renderChartGroups();
+});
+
+// 年份選擇器（群組頁面）
+function populateYearSelectorGroups() {
+  const years = new Set();
+  recordsGroups.forEach(r => {
+    const y = r.date.substring(0, 4);
+    years.add(y);
+  });
+  
+  yearSelectorGroups.innerHTML = "";
+  Array.from(years).sort().reverse().forEach(y => {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y + "年";
+    yearSelectorGroups.appendChild(opt);
+  });
+  
+  if (years.size > 0) {
+    selectedYearGroups = Array.from(years).sort().reverse()[0];
+    yearSelectorGroups.value = selectedYearGroups;
+  }
+}
+
+yearSelectorGroups.addEventListener("change", () => {
+  selectedYearGroups = yearSelectorGroups.value;
+  renderChartGroups();
+});
+
+// 篩選功能（群組頁面）
+function updateFilterCategoryOptionsGroups() {
+  const categorySelect = document.getElementById("filter-category-groups");
+  const categories = new Set();
+  
+  recordsGroups.forEach(r => {
+    categories.add(r.category);
+  });
+  
+  categorySelect.innerHTML = '<option value="">全部類別</option>';
+  
+  Array.from(categories).sort().forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    categorySelect.appendChild(opt);
+  });
+}
+
+document.getElementById("apply-filter-btn-groups").addEventListener("click", () => {
+  const year = document.getElementById("filter-year-groups").value;
+  const month = document.getElementById("filter-month-groups").value;
+  const day = document.getElementById("filter-day-groups").value;
+  const category = document.getElementById("filter-category-groups").value;
+  
+  let filtered = recordsGroups;
+  
+  if (year) filtered = filtered.filter(r => r.date.substring(0, 4) === year);
+  if (month) filtered = filtered.filter(r => r.date.substring(5, 7) === month.padStart(2, '0'));
+  if (day) filtered = filtered.filter(r => r.date.substring(8, 10) === day.padStart(2, '0'));
+  if (category) filtered = filtered.filter(r => r.category === category);
+  
+  renderRecordsGroups(filtered);
+});
+
+document.getElementById("clear-filter-btn-groups").addEventListener("click", () => {
+  document.getElementById("filter-year-groups").value = "";
+  document.getElementById("filter-month-groups").value = "";
+  document.getElementById("filter-day-groups").value = "";
+  document.getElementById("filter-category-groups").value = "";
+  renderRecordsGroups();
+});
+
+// 初始化群組頁面
+function initGroupsPage() {
+  loadRecordsGroups();
+  renderRecordsGroups();
+  updateSummaryGroups();
+  renderChartGroups();
+  populateMonthSelectorGroups();
+  populateYearSelectorGroups();
+  updateFilterCategoryOptionsGroups();
+}
+
+// 當切換到群組頁面時初始化
+const originalShowPage = showPage;
+showPage = function(pageName) {
+  originalShowPage(pageName);
+  if (pageName === 'groups') {
+    initGroupsPage();
+  }
+};
