@@ -75,16 +75,40 @@ body {
 
 .sidebar-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   padding: 20px;
   border-bottom: 2px solid #e6e8ee;
+  position: relative;
 }
 
 .sidebar-header h2 {
   font-size: 20px;
   color: #333;
   margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 28px;
+  transition: color 0.2s ease;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.sidebar-close:hover {
+  color: #e74c3c;
 }
 
 .sidebar-nav {
