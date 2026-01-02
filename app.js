@@ -4,15 +4,24 @@ let currentPage = 'main'; // 'main' 或 'groups'
 function showPage(pageName) {
   const mainPage = document.getElementById('main-page');
   const groupsPage = document.getElementById('groups-page');
+  const addGroupBtn = document.getElementById('add-group-btn');
   
   if (pageName === 'main') {
     mainPage.style.display = 'block';
     groupsPage.style.display = 'none';
     currentPage = 'main';
+    // 隱藏新增群組按鈕（個人頁面不顯示）
+    if (addGroupBtn) {
+      addGroupBtn.style.display = 'none';
+    }
   } else if (pageName === 'groups') {
     mainPage.style.display = 'none';
     groupsPage.style.display = 'block';
     currentPage = 'groups';
+    // 顯示新增群組按鈕（群組頁面才顯示）
+    if (addGroupBtn && currentUser) {
+      addGroupBtn.style.display = 'inline-block';
+    }
   }
 }
 
@@ -159,16 +168,27 @@ function updateAuthUI() {
   const registerBtn = document.getElementById("register-btn");
   const userInfo = document.getElementById("user-info");
   const usernameDisplay = document.getElementById("username-display");
+  const addGroupBtn = document.getElementById("add-group-btn");
   
   if (currentUser) {
     loginBtn.style.display = "none";
     registerBtn.style.display = "none";
     userInfo.style.display = "flex";
     usernameDisplay.textContent = currentUser;
+    // 只在群組頁面顯示新增群組按鈕
+    if (addGroupBtn && currentPage === 'groups') {
+      addGroupBtn.style.display = "inline-block";
+    } else if (addGroupBtn) {
+      addGroupBtn.style.display = "none";
+    }
   } else {
     loginBtn.style.display = "block";
     registerBtn.style.display = "block";
     userInfo.style.display = "none";
+    // 未登入時隱藏新增群組按鈕
+    if (addGroupBtn) {
+      addGroupBtn.style.display = "none";
+    }
   }
 }
 
@@ -180,6 +200,7 @@ const registerBtn = document.getElementById("register-btn");
 const closeLogin = document.getElementById("close-login");
 const closeRegister = document.getElementById("close-register");
 const logoutBtn = document.getElementById("logout-btn");
+const addGroupBtn = document.getElementById("add-group-btn");
 
 // 登出按鈕事件
 logoutBtn.addEventListener("click", () => {
@@ -190,6 +211,11 @@ logoutBtn.addEventListener("click", () => {
     renderSummary();
     alert("已成功登出");
   }
+});
+
+// 新增群組按鈕事件
+addGroupBtn.addEventListener("click", () => {
+  alert("新增群組功能開發中...");
 });
 
 loginBtn.addEventListener("click", () => {
