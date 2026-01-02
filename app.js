@@ -20,9 +20,13 @@ function closeSidebar() {
   document.body.style.overflow = ""; // 恢復滾動
 }
 
-// 漢堡按鈕點擊事件（只開啟，不關閉）
+// 漢堡按鈕點擊事件（切換開關）
 hamburgerBtn.addEventListener("click", () => {
-  openSidebar();
+  if (sidebar.classList.contains("active")) {
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
 });
 
 // 側邊欄關閉按鈕點擊事件
