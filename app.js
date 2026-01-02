@@ -1,3 +1,21 @@
+/* ===== 頁面路由系統 ===== */
+let currentPage = 'main'; // 'main' 或 'groups'
+
+function showPage(pageName) {
+  const mainPage = document.getElementById('main-page');
+  const groupsPage = document.getElementById('groups-page');
+  
+  if (pageName === 'main') {
+    mainPage.style.display = 'block';
+    groupsPage.style.display = 'none';
+    currentPage = 'main';
+  } else if (pageName === 'groups') {
+    mainPage.style.display = 'none';
+    groupsPage.style.display = 'block';
+    currentPage = 'groups';
+  }
+}
+
 /* ===== 漢堡選單與側邊欄 ===== */
 const hamburgerBtn = document.getElementById("hamburger-btn");
 const sidebar = document.getElementById("sidebar");
@@ -31,16 +49,18 @@ hamburgerBtn.addEventListener("click", () => {
 // 遮罩點擊事件
 sidebarOverlay.addEventListener("click", closeSidebar);
 
-// 側邊欄連結點擊後自動關閉
-document.querySelectorAll(".sidebar-link").forEach(link => {
-  link.addEventListener("click", () => {
-    closeSidebar();
-  });
-});
-
 // 首頁連結點擊事件
 document.getElementById("home-link").addEventListener("click", (e) => {
   e.preventDefault();
+  showPage('main');
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  closeSidebar();
+});
+
+// 群組捷徑連結點擊事件
+document.getElementById("groups-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  showPage('groups');
   window.scrollTo({ top: 0, behavior: "smooth" });
   closeSidebar();
 });
