@@ -159,6 +159,18 @@ const loginBtn = document.getElementById("login-btn");
 const registerBtn = document.getElementById("register-btn");
 const closeLogin = document.getElementById("close-login");
 const closeRegister = document.getElementById("close-register");
+const logoutBtn = document.getElementById("logout-btn");
+
+// 登出按鈕事件
+logoutBtn.addEventListener("click", () => {
+  if (confirm("確定要登出嗎？")) {
+    logoutUser();
+    updateAuthUI();
+    renderRecords();
+    renderSummary();
+    alert("已成功登出");
+  }
+});
 
 loginBtn.addEventListener("click", () => {
   loginModal.style.display = "block";
