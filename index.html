@@ -21,7 +21,7 @@
       <h2>選單</h2>
     </div>
     <nav class="sidebar-nav">
-      <a href="#" class="sidebar-link" id="home-link">🏠 首頁</a>
+      <a href="#" class="sidebar-link" id="home-link">👤 個人</a>
       <a href="#" class="sidebar-link" id="groups-link">👥 群組捷徑</a>
     </nav>
   </div>
@@ -185,10 +185,142 @@
   <div id="groups-page" class="page-view" style="display: none;">
     <div class="container">
       <header>
-        <h1>群組捷徑</h1>
-        <p class="subtitle">群組功能開發中...</p>
-      </header>
-    </div>
+        <h1>零用錢記帳小管家</h1>
+        <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
+
+      <!-- 顏色選擇按鈕 -->
+      <button id="color-picker-btn-groups" class="color-picker-btn" title="更換背景顏色" type="button">🎨</button>
+
+      <!-- 顏色選擇面板 -->
+      <div id="color-picker-panel-groups" class="color-picker-panel">
+        <div class="color-option" data-color="#f5f6f8" style="background: #f5f6f8;" title="預設灰白"></div>
+        <div class="color-option" data-color="#e8f4f8" style="background: #e8f4f8;" title="淺藍"></div>
+        <div class="color-option" data-color="#f0f8e8" style="background: #f0f8e8;" title="淺綠"></div>
+        <div class="color-option" data-color="#fef5e7" style="background: #fef5e7;" title="淺黃"></div>
+        <div class="color-option" data-color="#fce8f3" style="background: #fce8f3;" title="淺粉"></div>
+        <div class="color-option" data-color="#f0e8f8" style="background: #f0e8f8;" title="淺紫"></div>
+        <div class="color-option" data-color="#ffffff" style="background: #ffffff;" title="純白"></div>
+        <div class="color-option" data-color="#e8e8e8" style="background: #e8e8e8;" title="淺灰"></div>
+      </div>
+    </header>
+
+    <!-- 圓餅圖區塊 -->
+    <section class="box" id="chart-section-groups">
+      <h3>收支圓餅圖</h3>
+      <p class="subtitle small">一眼看出收入與支出比例</p>
+
+      <!-- 圖表類型切換 -->
+      <div class="chart-tabs">
+        <button class="chart-tab active" data-type="total" type="button">總收支圓餅圖</button>
+        <button class="chart-tab" data-type="month" type="button">月收支圓餅圖</button>
+        <select id="month-selector-groups" class="chart-selector"></select>
+        <button class="chart-tab" data-type="year" type="button">年收支圓餅圖</button>
+        <select id="year-selector-groups" class="chart-selector"></select>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="pieChart-groups"></canvas>
+      </div>
+    </section>
+
+    <!-- 總覽 -->
+    <section id="summary-groups" class="summary">
+      <div class="card">
+        <div class="card-title">總收入</div>
+        <div id="total-income-groups" class="kpi income">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">總支出</div>
+        <div id="total-expense-groups" class="kpi expense">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">目前結餘</div>
+        <div id="balance-groups" class="kpi balance">0</div>
+      </div>
+    </section>
+
+    <!-- 新增紀錄 -->
+    <section class="box">
+      <h3>新增收支紀錄</h3>
+      <form id="tx-form-groups">
+        <div class="row">
+          <select name="type" required>
+            <option value="支出">支出</option>
+            <option value="收入">收入</option>
+          </select>
+
+          <input type="number" name="amount" placeholder="金額" min="0" step="1" required />
+
+          <!-- ✅ 這裡：加 id，並保留原本選項 -->
+          <select name="category" id="category-select-groups" required>
+            <option>飲食</option>
+            <option>交通</option>
+            <option>娛樂</option>
+            <option>其他</option>
+          </select>
+
+          <!-- ✅ 這裡：新增自訂類別輸入框（預設隱藏） -->
+          <input
+            type="text"
+            id="custom-category-groups"
+            class="custom-category"
+            placeholder="自訂類別（選『其他』才會出現）"
+            autocomplete="off"
+          />
+
+          <input type="date" name="date" id="date-input-groups" required />
+        </div>
+
+        <textarea name="note" placeholder="備註（可留空）"></textarea>
+
+        <div class="actions">
+          <button class="btn primary" type="submit">新增</button>
+          <button class="btn danger" type="button" id="clear-all-btn-groups">清空所有紀錄</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 收支紀錄 -->
+    <section id="records-groups" class="box">
+      <h3>收支紀錄</h3>
+      
+      <!-- 篩選區域 -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label>日期篩選：</label>
+          <input type="number" id="filter-year-groups" placeholder="年" min="2000" max="2100" class="filter-input" />
+          <input type="number" id="filter-month-groups" placeholder="月" min="1" max="12" class="filter-input" />
+          <input type="number" id="filter-day-groups" placeholder="日" min="1" max="31" class="filter-input" />
+        </div>
+        <div class="filter-group">
+          <label>類別篩選：</label>
+          <select id="filter-category-groups" class="filter-select">
+            <option value="">全部類別</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button id="apply-filter-btn-groups" class="btn primary" type="button">套用篩選</button>
+          <button id="clear-filter-btn-groups" class="btn" type="button">清除篩選</button>
+        </div>
+      </div>
+      
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>類型</th>
+              <th class="num">金額</th>
+              <th>分類</th>
+              <th>備註</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tx-tbody-groups"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
   </div>
 
   <!-- 登入 Modal -->
