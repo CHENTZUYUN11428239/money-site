@@ -410,6 +410,10 @@ for (let year = startYear; year <= endYear; year++) {
   yearSelector.appendChild(option);
 }
 
+// 初始化選擇器顯示狀態 - 預設顯示總收支，隱藏月/年選擇器
+monthSelector.style.display = "none";
+yearSelector.style.display = "none";
+
 let records = [];
 
 function save() {
@@ -934,6 +938,10 @@ for (let year = startYear; year <= endYear; year++) {
   }
   yearSelectorGroups.appendChild(option);
 }
+
+// 初始化選擇器顯示狀態（群組頁面）- 預設顯示總收支，隱藏月/年選擇器
+monthSelectorGroups.style.display = "none";
+yearSelectorGroups.style.display = "none";
 
 // 自訂類別處理（群組頁面）
 categorySelectGroups.addEventListener("change", () => {
