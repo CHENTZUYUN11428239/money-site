@@ -177,7 +177,7 @@ function updateAuthUI() {
     usernameDisplay.textContent = currentUser;
     // 只在群組頁面顯示新增群組按鈕
     if (addGroupBtn && currentPage === 'groups') {
-      addGroupBtn.style.display = "inline-block";
+      addGroupBtn.style.display = "block";
     } else if (addGroupBtn) {
       addGroupBtn.style.display = "none";
     }

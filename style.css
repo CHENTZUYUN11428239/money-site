@@ -452,6 +452,30 @@ header {
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
+/* ===== 新增群組按鈕 (在群組頁面內容中) ===== */
+.add-group-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 20px auto;
+  padding: 16px 24px;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.add-group-btn:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
 /* ===== Modal 樣式 ===== */
 .modal {
   display: none;
