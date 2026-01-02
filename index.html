@@ -22,9 +22,7 @@
     </div>
     <nav class="sidebar-nav">
       <a href="#" class="sidebar-link" id="home-link">🏠 首頁</a>
-      <a href="#summary" class="sidebar-link">💰 總覽</a>
-      <a href="#tx-form" class="sidebar-link">➕ 新增紀錄</a>
-      <a href="#records" class="sidebar-link">📝 收支紀錄</a>
+      <a href="#" class="sidebar-link" id="groups-link">👥 群組捷徑</a>
     </nav>
   </div>
 
@@ -41,10 +39,12 @@
     </div>
   </div>
 
-  <div class="container">
-    <header>
-      <h1>零用錢記帳小管家</h1>
-      <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
+  <!-- 主頁面 -->
+  <div id="main-page" class="page-view">
+    <div class="container">
+      <header>
+        <h1>零用錢記帳小管家</h1>
+        <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
 
       <!-- 顏色選擇按鈕 -->
       <button id="color-picker-btn" class="color-picker-btn" title="更換背景顏色" type="button">🎨</button>
@@ -178,6 +178,17 @@
         </table>
       </div>
     </section>
+  </div>
+  </div>
+
+  <!-- 群組捷徑頁面 -->
+  <div id="groups-page" class="page-view" style="display: none;">
+    <div class="container">
+      <header>
+        <h1>群組捷徑</h1>
+        <p class="subtitle">群組功能開發中...</p>
+      </header>
+    </div>
   </div>
 
   <!-- 登入 Modal -->
