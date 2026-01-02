@@ -414,16 +414,6 @@ header {
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
 }
 
-.auth-btn.logout {
-  background: #e74c3c;
-  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
-}
-
-.auth-btn.logout:hover {
-  background: #c0392b;
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
-}
-
 .user-info {
   display: flex;
   gap: 10px;
@@ -437,6 +427,24 @@ header {
 #username-display {
   font-weight: 600;
   color: #333;
+}
+
+.logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
 /* ===== Modal 樣式 ===== */
