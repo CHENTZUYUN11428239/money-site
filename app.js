@@ -1226,6 +1226,25 @@ function updateMemberSelect() {
   if (currentValue && (currentValue === "" || currentValue === "其他" || members.includes(currentValue))) {
     memberSelectGroups.value = currentValue;
   }
+  
+  // 同時更新批次同步的成員選擇器
+  updateBatchSyncMemberSelect();
+}
+
+// 更新批次同步成員選擇器
+function updateBatchSyncMemberSelect() {
+  const batchSyncMemberSelect = document.getElementById("batch-sync-member-select");
+  if (!batchSyncMemberSelect) return;
+  
+  const members = loadMembers();
+  batchSyncMemberSelect.innerHTML = '<option value="">選擇成員</option>';
+  
+  members.forEach(member => {
+    const option = document.createElement("option");
+    option.value = member;
+    option.textContent = member;
+    batchSyncMemberSelect.appendChild(option);
+  });
 }
 
 // 成員下拉選單變更處理
@@ -1244,6 +1263,77 @@ manageMembersBtn.addEventListener("click", () => {
   renderMembersList();
   manageMembersModal.style.display = "block";
 });
+
+// 批次同步按鈕
+const batchSyncBtn = document.getElementById("batch-sync-btn");
+if (batchSyncBtn) {
+  batchSyncBtn.addEventListener("click", () => {
+    const batchSyncMemberSelect = document.getElementById("batch-sync-member-select");
+    if (!batchSyncMemberSelect) return;
+    
+    const selectedMember = batchSyncMemberSelect.value;
+    if (!selectedMember) {
+      alert("請先選擇要同步的成員！");
+      return;
+    }
+    
+    batchSyncMemberToPersonal(selectedMember);
+  });
+}
+
+// 批次同步成員的所有紀錄到個人
+function batchSyncMemberToPersonal(memberName) {
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) {
+    alert("請先登入才能同步紀錄！");
+    return;
+  }
+  
+  // 篩選出該成員的所有紀錄
+  const memberRecords = recordsGroups.filter(r => r.member === memberName);
+  
+  if (memberRecords.length === 0) {
+    alert(`沒有找到成員「${memberName}」的紀錄！`);
+    return;
+  }
+  
+  // 取得群組名稱
+  let groupName = "群組";
+  if (currentGroup) {
+    groupName = currentGroup.name;
+  } else {
+    const groups = loadGroups();
+    if (groups.length > 0) {
+      groupName = groups[0].name;
+    }
+  }
+  
+  // 批次建立個人紀錄
+  let syncCount = 0;
+  memberRecords.forEach(groupRecord => {
+    const personalRecord = {
+      id: Date.now() + syncCount, // 確保每筆紀錄有唯一 ID
+      type: groupRecord.type,
+      amount: groupRecord.amount,
+      category: `[${groupName}] ${groupRecord.category}`,
+      date: groupRecord.date,
+      note: groupRecord.note || ""
+    };
+    
+    records.push(personalRecord);
+    syncCount++;
+  });
+  
+  // 儲存個人紀錄
+  saveUserRecords(records);
+  
+  // 如果目前在個人頁面，立即更新顯示
+  if (currentPage === 'main') {
+    renderAll();
+  }
+  
+  alert(`已成功將成員「${memberName}」的 ${syncCount} 筆紀錄同步到個人！`);
+}
 
 // 關閉管理成員 Modal
 closeMembersModal.addEventListener("click", () => {

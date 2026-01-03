@@ -320,6 +320,14 @@
         </div>
 
         <textarea name="note" placeholder="備註（可留空）"></textarea>
+        
+        <!-- 批次同步區域 -->
+        <div class="batch-sync-section" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+          <button type="button" id="batch-sync-btn" class="btn" style="white-space: nowrap;">一鍵同步收支到個人</button>
+          <select id="batch-sync-member-select" style="flex: 1;">
+            <option value="">選擇成員</option>
+          </select>
+        </div>
 
         <div class="actions">
           <button class="btn primary" type="submit">新增</button>
