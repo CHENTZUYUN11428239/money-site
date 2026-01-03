@@ -132,16 +132,23 @@ function renderGroupsInSidebar() {
 }
 
 // Add Group Modal
-const addGroupBtn = document.getElementById("add-group-btn");
 const addGroupModal = document.getElementById("add-group-modal");
 const addGroupModalClose = document.getElementById("add-group-modal-close");
 const addGroupModalCancel = document.getElementById("add-group-modal-cancel");
 const addGroupForm = document.getElementById("add-group-form");
 
-// Open modal
-addGroupBtn.addEventListener("click", () => {
-  addGroupModal.classList.add("show");
-});
+// Get addGroupBtn reference (will be used later after it's declared)
+let addGroupBtn;
+
+// Initialize modal after DOM is ready
+function initializeAddGroupModal() {
+  addGroupBtn = document.getElementById("add-group-btn");
+  
+  // Open modal
+  addGroupBtn.addEventListener("click", () => {
+    addGroupModal.classList.add("show");
+  });
+}
 
 // Close modal
 function closeAddGroupModal() {
@@ -327,7 +334,6 @@ const registerBtn = document.getElementById("register-btn");
 const closeLogin = document.getElementById("close-login");
 const closeRegister = document.getElementById("close-register");
 const logoutBtn = document.getElementById("logout-btn");
-const addGroupBtn = document.getElementById("add-group-btn");
 
 // 登出按鈕事件
 logoutBtn.addEventListener("click", () => {
@@ -429,6 +435,9 @@ function loadUserData() {
 // 初始化認證狀態
 checkLoginStatus();
 updateAuthUI();
+
+// Initialize add group modal
+initializeAddGroupModal();
 
 /* ===== 原有程式碼 ===== */
 const form = document.getElementById("tx-form");
