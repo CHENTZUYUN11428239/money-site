@@ -189,8 +189,16 @@ if (addGroupForm) {
   addGroupForm.addEventListener("submit", (e) => {
     e.preventDefault();
     
-    const groupName = document.getElementById("group-name-input").value.trim();
-    const groupDesc = document.getElementById("group-desc-input").value.trim();
+    const groupNameInput = document.getElementById("group-name-input");
+    const groupDescInput = document.getElementById("group-desc-input");
+    
+    if (!groupNameInput || !groupDescInput) {
+      console.error("Form input elements not found");
+      return;
+    }
+    
+    const groupName = groupNameInput.value.trim();
+    const groupDesc = groupDescInput.value.trim();
     
     if (!groupName) {
       alert("請輸入群組名稱");
