@@ -168,7 +168,10 @@ function renderGroupsInSidebar() {
       currentGroup = group; // 設置當前群組
       loadRecordsGroups(); // 載入該群組的紀錄
       showPage('groups');
-      renderAllGroups(); // 重新渲染頁面
+      updateGroupHeader(); // 更新群組標題和說明
+      renderRecordsGroups(); // 重新渲染紀錄
+      updateSummaryGroups(); // 更新統計
+      renderChartGroups(); // 更新圓餅圖
       closeSidebar();
     });
     groupsList.appendChild(groupItem);
@@ -281,7 +284,10 @@ if (addGroupForm) {
     
     // Switch to groups page
     showPage('groups');
-    renderAllGroups();
+    updateGroupHeader(); // 更新群組標題和說明
+    renderRecordsGroups(); // 重新渲染紀錄
+    updateSummaryGroups(); // 更新統計
+    renderChartGroups(); // 更新圓餅圖
   });
 }
 
