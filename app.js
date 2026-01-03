@@ -1,5 +1,6 @@
 /* ===== 頁面路由系統 ===== */
 let currentPage = 'main'; // 'main' 或 'groups'
+let currentGroup = null; // 當前選擇的群組
 
 /* ===== 常數定義 ===== */
 const GROUP_PREFIX = '[群組]'; // 群組同步到個人時的分類前綴
@@ -144,6 +145,7 @@ function renderGroupsInSidebar() {
     groupItem.textContent = group.name;
     groupItem.addEventListener("click", (e) => {
       e.preventDefault();
+      currentGroup = group; // 設置當前群組
       showPage('groups');
       closeSidebar();
       // TODO: Switch to specific group when multiple groups are supported
@@ -243,6 +245,9 @@ if (addGroupForm) {
     
     existingGroups.push(newGroup);
     saveGroups(existingGroups);
+    
+    // 設置為當前群組
+    currentGroup = newGroup;
     
     // Update UI
     renderGroupsInSidebar();
@@ -1221,6 +1226,25 @@ function updateMemberSelect() {
   if (currentValue && (currentValue === "" || currentValue === "其他" || members.includes(currentValue))) {
     memberSelectGroups.value = currentValue;
   }
+  
+  // 同時更新批次同步的成員選擇器
+  updateBatchSyncMemberSelect();
+}
+
+// 更新批次同步成員選擇器
+function updateBatchSyncMemberSelect() {
+  const batchSyncMemberSelect = document.getElementById("batch-sync-member-select");
+  if (!batchSyncMemberSelect) return;
+  
+  const members = loadMembers();
+  batchSyncMemberSelect.innerHTML = '<option value="">選擇成員</option>';
+  
+  members.forEach(member => {
+    const option = document.createElement("option");
+    option.value = member;
+    option.textContent = member;
+    batchSyncMemberSelect.appendChild(option);
+  });
 }
 
 // 成員下拉選單變更處理
@@ -1239,6 +1263,83 @@ manageMembersBtn.addEventListener("click", () => {
   renderMembersList();
   manageMembersModal.style.display = "block";
 });
+
+// 批次同步按鈕
+const batchSyncBtn = document.getElementById("batch-sync-btn");
+if (batchSyncBtn) {
+  batchSyncBtn.addEventListener("click", () => {
+    const batchSyncMemberSelect = document.getElementById("batch-sync-member-select");
+    if (!batchSyncMemberSelect) return;
+    
+    const selectedMember = batchSyncMemberSelect.value;
+    if (!selectedMember) {
+      alert("請先選擇要同步的成員！");
+      return;
+    }
+    
+    batchSyncMemberToPersonal(selectedMember);
+  });
+}
+
+// 批次同步成員的所有紀錄到個人
+function batchSyncMemberToPersonal(memberName) {
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) {
+    alert("請先登入才能同步紀錄！");
+    return;
+  }
+  
+  // 先載入當前使用者的個人紀錄，確保不會覆蓋現有紀錄
+  records = getUserRecords();
+  
+  // 篩選出該成員的所有紀錄
+  const memberRecords = recordsGroups.filter(r => r.member === memberName);
+  
+  if (memberRecords.length === 0) {
+    alert(`沒有找到成員「${memberName}」的紀錄！`);
+    return;
+  }
+  
+  // 取得群組名稱
+  let groupName = "群組";
+  if (currentGroup) {
+    groupName = currentGroup.name;
+  } else {
+    const groups = loadGroups();
+    if (groups.length > 0) {
+      groupName = groups[0].name;
+    }
+  }
+  
+  // 找出最大的現有 ID，確保新 ID 不會重複
+  let maxId = records.length > 0 ? Math.max(...records.map(r => r.id)) : Date.now();
+  
+  // 批次建立個人紀錄
+  let syncCount = 0;
+  memberRecords.forEach(groupRecord => {
+    const personalRecord = {
+      id: maxId + syncCount + 1, // 從最大 ID 遞增，確保唯一性
+      type: groupRecord.type,
+      amount: groupRecord.amount,
+      category: `[${groupName}] ${groupRecord.category}`,
+      date: groupRecord.date,
+      note: groupRecord.note || ""
+    };
+    
+    records.push(personalRecord);
+    syncCount++;
+  });
+  
+  // 儲存個人紀錄
+  saveUserRecords(records);
+  
+  // 如果目前在個人頁面，立即更新顯示
+  if (currentPage === 'main') {
+    renderAll();
+  }
+  
+  alert(`已成功將成員「${memberName}」的 ${syncCount} 筆紀錄同步到個人！`);
+}
 
 // 關閉管理成員 Modal
 closeMembersModal.addEventListener("click", () => {
@@ -1372,9 +1473,10 @@ function deleteRecordGroups(id) {
 // 渲染紀錄列表（群組頁面）
 function renderRecordsGroups(filteredRecords = null) {
   const dataToRender = filteredRecords || recordsGroups;
-  // Sort by date ascending (oldest to newest, furthest from now to nearest)
+  // Sort by date descending (newest first), then by ID descending (newest first) for same dates
   const sorted = dataToRender.slice().sort((a, b) => {
-    return new Date(a.date) - new Date(b.date);
+    if (a.date === b.date) return b.id - a.id;
+    return (a.date > b.date) ? -1 : 1;
   });
   
   tbodyGroups.innerHTML = "";
@@ -1620,6 +1722,9 @@ function syncToPersonal(recordId) {
     return;
   }
   
+  // 先載入當前使用者的個人紀錄，確保不會覆蓋現有紀錄
+  records = getUserRecords();
+  
   // 找到對應的群組紀錄
   const groupRecord = recordsGroups.find(r => r.id === recordId);
   if (!groupRecord) {
@@ -1627,12 +1732,23 @@ function syncToPersonal(recordId) {
     return;
   }
   
-  // 建立新的個人紀錄，category 加上群組前綴
+  // 取得當前群組名稱（如果沒有，使用第一個群組的名稱）
+  let groupName = "群組";
+  if (currentGroup) {
+    groupName = currentGroup.name;
+  } else {
+    const groups = loadGroups();
+    if (groups.length > 0) {
+      groupName = groups[0].name;
+    }
+  }
+  
+  // 建立新的個人紀錄，category 加上群組名稱前綴
   const personalRecord = {
     id: Date.now(),
     type: groupRecord.type,
     amount: groupRecord.amount,
-    category: `${GROUP_PREFIX} ${groupRecord.category}`,
+    category: `[${groupName}] ${groupRecord.category}`,
     date: groupRecord.date,
     note: groupRecord.note || ""
   };
@@ -1643,6 +1759,11 @@ function syncToPersonal(recordId) {
   
   // 如果目前在個人頁面，立即更新顯示
   if (currentPage === 'main') {
+    renderAll();
+  }
+  
+  alert("已成功同步到個人收支紀錄！");
+}
     renderAll();
   }
   
