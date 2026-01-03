@@ -1,6 +1,9 @@
 /* ===== 頁面路由系統 ===== */
 let currentPage = 'main'; // 'main' 或 'groups'
 
+/* ===== 常數定義 ===== */
+const GROUP_PREFIX = '[群組]'; // 群組同步到個人時的分類前綴
+
 function showPage(pageName) {
   const mainPage = document.getElementById('main-page');
   const groupsPage = document.getElementById('groups-page');
@@ -1218,12 +1221,12 @@ function syncToPersonal(recordId) {
     return;
   }
   
-  // 建立新的個人紀錄，category 加上 [群組] 前綴
+  // 建立新的個人紀錄，category 加上群組前綴
   const personalRecord = {
     id: Date.now(),
     type: groupRecord.type,
     amount: groupRecord.amount,
-    category: `[群組] ${groupRecord.category}`,
+    category: `${GROUP_PREFIX} ${groupRecord.category}`,
     date: groupRecord.date,
     note: groupRecord.note || ""
   };
@@ -1231,6 +1234,11 @@ function syncToPersonal(recordId) {
   // 加入到個人紀錄中
   records.push(personalRecord);
   saveUserRecords(records);
+  
+  // 如果目前在個人頁面，立即更新顯示
+  if (currentPage === 'main') {
+    renderAll();
+  }
   
   alert("已成功同步到個人收支紀錄！");
 }
