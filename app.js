@@ -1,6 +1,9 @@
 /* ===== 頁面路由系統 ===== */
 let currentPage = 'main'; // 'main' 或 'groups'
 
+/* ===== 常數定義 ===== */
+const GROUP_PREFIX = '[群組]'; // 群組同步到個人時的分類前綴
+
 function showPage(pageName) {
   const mainPage = document.getElementById('main-page');
   const groupsPage = document.getElementById('groups-page');
@@ -978,6 +981,7 @@ formGroups.addEventListener("submit", (e) => {
     amount: parseFloat(fd.get("amount")),
     category: category,
     date: fd.get("date"),
+    member: fd.get("member") || "",
     note: fd.get("note") || ""
   };
   
@@ -1021,8 +1025,12 @@ function renderRecordsGroups(filteredRecords = null) {
         ${r.type === '支出' ? '-' : '+'}${r.amount}
       </td>
       <td>${r.category}</td>
+      <td>${r.member || ""}</td>
       <td>${r.note}</td>
-      <td><button class="btn danger small" onclick="deleteRecordGroups(${r.id})">刪除</button></td>
+      <td>
+        <button class="btn primary small" onclick="syncToPersonal(${r.id})" style="margin-right: 5px;">同步自己的收支到個人</button>
+        <button class="btn danger small" onclick="deleteRecordGroups(${r.id})">刪除</button>
+      </td>
     `;
     tbodyGroups.appendChild(tr);
   });
@@ -1197,6 +1205,43 @@ document.getElementById("clear-filter-btn-groups").addEventListener("click", () 
   document.getElementById("filter-category-groups").value = "";
   renderRecordsGroups();
 });
+
+// 同步群組收支到個人
+function syncToPersonal(recordId) {
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) {
+    alert("請先登入才能同步紀錄！");
+    return;
+  }
+  
+  // 找到對應的群組紀錄
+  const groupRecord = recordsGroups.find(r => r.id === recordId);
+  if (!groupRecord) {
+    alert("找不到該紀錄！");
+    return;
+  }
+  
+  // 建立新的個人紀錄，category 加上群組前綴
+  const personalRecord = {
+    id: Date.now(),
+    type: groupRecord.type,
+    amount: groupRecord.amount,
+    category: `${GROUP_PREFIX} ${groupRecord.category}`,
+    date: groupRecord.date,
+    note: groupRecord.note || ""
+  };
+  
+  // 加入到個人紀錄中
+  records.push(personalRecord);
+  saveUserRecords(records);
+  
+  // 如果目前在個人頁面，立即更新顯示
+  if (currentPage === 'main') {
+    renderAll();
+  }
+  
+  alert("已成功同步到個人收支紀錄！");
+}
 
 // 初始化群組頁面
 function initGroupsPage() {
