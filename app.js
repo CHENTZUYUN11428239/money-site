@@ -69,191 +69,13 @@ document.getElementById("home-link").addEventListener("click", (e) => {
   closeSidebar();
 });
 
-// 群組標題點擊事件（展開/收起群組列表）
-const groupsHeader = document.getElementById("groups-header");
-const groupsList = document.getElementById("groups-list");
-
-groupsHeader.addEventListener("click", () => {
-  const isExpanded = groupsList.style.display === "block";
-  groupsList.style.display = isExpanded ? "none" : "block";
-  groupsHeader.classList.toggle("expanded", !isExpanded);
+// 群組捷徑連結點擊事件
+document.getElementById("groups-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  showPage('groups');
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  closeSidebar();
 });
-
-/* ===== 群組管理 ===== */
-let userGroups = []; // Store user's groups
-
-// Get groups key for current user
-function getGroupsKey() {
-  if (!currentUser) return null;
-  return `groups_${currentUser}`;
-}
-
-// Load groups from localStorage
-function loadGroups() {
-  const key = getGroupsKey();
-  if (!key) return [];
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : [];
-}
-
-// Save groups to localStorage
-function saveGroups(groups) {
-  const key = getGroupsKey();
-  if (key) {
-    localStorage.setItem(key, JSON.stringify(groups));
-  }
-}
-
-// Render groups in sidebar
-function renderGroupsInSidebar() {
-  const groupsList = document.getElementById("groups-list");
-  userGroups = loadGroups();
-  
-  groupsList.innerHTML = "";
-  
-  // Add "新增群組" link at the top
-  const addGroupLink = document.createElement("a");
-  addGroupLink.className = "sidebar-group-item add-group-link";
-  addGroupLink.href = "#";
-  addGroupLink.textContent = "+ 新增群組";
-  addGroupLink.style.fontWeight = "bold";
-  addGroupLink.style.color = "#3498db";
-  addGroupLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (addGroupModal) {
-      addGroupModal.classList.add("show");
-    }
-    closeSidebar();
-  });
-  groupsList.appendChild(addGroupLink);
-  
-  if (userGroups.length === 0) {
-    const emptyMsg = document.createElement("div");
-    emptyMsg.style.padding = "12px 20px 12px 40px";
-    emptyMsg.style.color = "#999";
-    emptyMsg.style.fontSize = "13px";
-    emptyMsg.textContent = "尚無群組";
-    groupsList.appendChild(emptyMsg);
-    return;
-  }
-  
-  userGroups.forEach(group => {
-    const groupItem = document.createElement("a");
-    groupItem.className = "sidebar-group-item";
-    groupItem.href = "#";
-    groupItem.textContent = group.name;
-    groupItem.addEventListener("click", (e) => {
-      e.preventDefault();
-      showPage('groups');
-      closeSidebar();
-      // TODO: Switch to specific group when multiple groups are supported
-    });
-    groupsList.appendChild(groupItem);
-  });
-}
-
-// Add Group Modal
-const addGroupModal = document.getElementById("add-group-modal");
-const addGroupModalClose = document.getElementById("add-group-modal-close");
-const addGroupModalCancel = document.getElementById("add-group-modal-cancel");
-const addGroupForm = document.getElementById("add-group-form");
-
-// Get addGroupBtn reference (will be used later after it's declared)
-let addGroupBtn;
-
-// Initialize modal after DOM is ready
-function initializeAddGroupModal() {
-  addGroupBtn = document.getElementById("add-group-btn");
-  
-  if (!addGroupBtn) {
-    console.warn("addGroupBtn not found, will initialize later");
-    return;
-  }
-  
-  // Open modal
-  addGroupBtn.addEventListener("click", () => {
-    if (addGroupModal) {
-      addGroupModal.classList.add("show");
-    }
-  });
-}
-
-// Close modal
-function closeAddGroupModal() {
-  if (addGroupModal) {
-    addGroupModal.classList.remove("show");
-  }
-  if (addGroupForm) {
-    addGroupForm.reset();
-  }
-}
-
-if (addGroupModalClose) {
-  addGroupModalClose.addEventListener("click", closeAddGroupModal);
-}
-
-if (addGroupModalCancel) {
-  addGroupModalCancel.addEventListener("click", closeAddGroupModal);
-}
-
-// Close modal when clicking outside
-if (addGroupModal) {
-  addGroupModal.addEventListener("click", (e) => {
-    if (e.target === addGroupModal) {
-      closeAddGroupModal();
-    }
-  });
-}
-
-// Handle form submission
-if (addGroupForm) {
-  addGroupForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    
-    const groupNameInput = document.getElementById("group-name-input");
-    const groupDescInput = document.getElementById("group-desc-input");
-    
-    if (!groupNameInput || !groupDescInput) {
-      console.error("Form input elements not found");
-      return;
-    }
-    
-    const groupName = groupNameInput.value.trim();
-    const groupDesc = groupDescInput.value.trim();
-    
-    if (!groupName) {
-      alert("請輸入群組名稱");
-      return;
-    }
-    
-    // Check if group name already exists
-    const existingGroups = loadGroups();
-    if (existingGroups.some(g => g.name === groupName)) {
-      alert("群組名稱已存在，請使用其他名稱");
-      return;
-    }
-    
-    // Create new group
-    const newGroup = {
-      id: Date.now(),
-      name: groupName,
-      description: groupDesc,
-      createdAt: new Date().toISOString()
-    };
-    
-    existingGroups.push(newGroup);
-    saveGroups(existingGroups);
-    
-    // Update UI
-    renderGroupsInSidebar();
-    closeAddGroupModal();
-    
-    alert(`群組「${groupName}」已成功建立！`);
-    
-    // Switch to groups page
-    showPage('groups');
-  });
-}
 
 /* ===== 使用者認證系統 ===== */
 let currentUser = null;
@@ -362,8 +184,6 @@ function updateAuthUI() {
     } else if (addGroupBtn) {
       addGroupBtn.style.display = "none";
     }
-    // Render groups in sidebar
-    renderGroupsInSidebar();
   } else {
     loginBtn.style.display = "block";
     registerBtn.style.display = "block";
@@ -383,6 +203,7 @@ const registerBtn = document.getElementById("register-btn");
 const closeLogin = document.getElementById("close-login");
 const closeRegister = document.getElementById("close-register");
 const logoutBtn = document.getElementById("logout-btn");
+const addGroupBtn = document.getElementById("add-group-btn");
 
 // 登出按鈕事件
 logoutBtn.addEventListener("click", () => {
@@ -395,6 +216,10 @@ logoutBtn.addEventListener("click", () => {
   }
 });
 
+// 新增群組按鈕事件
+addGroupBtn.addEventListener("click", () => {
+  alert("新增群組功能開發中...");
+});
 
 loginBtn.addEventListener("click", () => {
   loginModal.style.display = "block";
@@ -484,9 +309,6 @@ function loadUserData() {
 // 初始化認證狀態
 checkLoginStatus();
 updateAuthUI();
-
-// Initialize add group modal
-initializeAddGroupModal();
 
 /* ===== 原有程式碼 ===== */
 const form = document.getElementById("tx-form");
@@ -622,7 +444,7 @@ function renderSummary() {
   totalExpenseEl.textContent = fmt(expense);
   balanceEl.textContent = fmt(balance);
   
-  // Apply dynamic color to balance: green if positive, red if negative, default if zero
+  // Update balance color to green
   if (balance > 0) {
     balanceEl.className = "kpi income";
   } else if (balance < 0) {
@@ -958,49 +780,30 @@ if (currentUser) {
 /* ===== 圖表類型切換功能 ===== */
 const chartTabs = document.querySelectorAll(".chart-tab");
 
-if (chartTabs && chartTabs.length > 0) {
-  chartTabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      // 更新活動狀態
-      chartTabs.forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
+chartTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    // 更新活動狀態
+    chartTabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
 
-      // 更新圖表類型並重新渲染
-      currentChartType = tab.dataset.type;
-      
-      // 控制選擇器顯示/隱藏
-      if (currentChartType === "month") {
-        if (monthSelector) monthSelector.style.display = "inline-block";
-        if (yearSelector) yearSelector.style.display = "none";
-      } else if (currentChartType === "year") {
-        if (monthSelector) monthSelector.style.display = "none";
-        if (yearSelector) yearSelector.style.display = "inline-block";
-      } else {
-        if (monthSelector) monthSelector.style.display = "none";
-        if (yearSelector) yearSelector.style.display = "none";
-      }
-      
-      renderChart();
-    });
+    // 更新圖表類型並重新渲染
+    currentChartType = tab.dataset.type;
+    renderChart();
   });
-}
+});
 
 // 月份和年份選擇器事件監聽
-if (monthSelector) {
-  monthSelector.addEventListener("change", () => {
-    if (currentChartType === "month") {
-      renderChart();
-    }
-  });
-}
+monthSelector.addEventListener("change", () => {
+  if (currentChartType === "month") {
+    renderChart();
+  }
+});
 
-if (yearSelector) {
-  yearSelector.addEventListener("change", () => {
-    if (currentChartType === "year") {
-      renderChart();
-    }
-  });
-}
+yearSelector.addEventListener("change", () => {
+  if (currentChartType === "year") {
+    renderChart();
+  }
+});
 
 /* ===== 背景顏色切換功能 ===== */
 const colorBtn = document.getElementById("color-picker-btn");
@@ -1372,9 +1175,9 @@ function deleteRecordGroups(id) {
 // 渲染紀錄列表（群組頁面）
 function renderRecordsGroups(filteredRecords = null) {
   const dataToRender = filteredRecords || recordsGroups;
-  // Sort by date ascending (oldest to newest, furthest from now to nearest)
+  // Sort by ID in descending order to show newest first
   const sorted = dataToRender.slice().sort((a, b) => {
-    return new Date(a.date) - new Date(b.date);
+    return b.id - a.id;
   });
   
   tbodyGroups.innerHTML = "";
@@ -1404,7 +1207,7 @@ function updateSummaryGroups() {
   const expense = recordsGroups.filter(r => r.type === "支出").reduce((sum, r) => sum + r.amount, 0);
   const balance = income - expense;
   
-  // Explicitly set income to green and expense to red
+  // Apply green color to income, red color to expense
   totalIncomeElGroups.textContent = income.toLocaleString();
   totalIncomeElGroups.className = "kpi income";
   
@@ -1413,7 +1216,6 @@ function updateSummaryGroups() {
   
   balanceElGroups.textContent = balance.toLocaleString();
   
-  // Apply dynamic color to balance: green if positive, red if negative, default if zero
   if (balance > 0) {
     balanceElGroups.className = "kpi income";
   } else if (balance < 0) {
@@ -1501,50 +1303,44 @@ function renderChartGroups() {
 }
 
 // 圖表切換（群組頁面）
-if (chartTabsGroups && chartTabsGroups.length > 0) {
-  chartTabsGroups.forEach(tab => {
-    tab.addEventListener("click", () => {
-      chartTabsGroups.forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      
-      const type = tab.dataset.type;
-      chartTypeGroups = type;
-      
-      if (type === "month") {
-        if (monthSelectorGroups) monthSelectorGroups.style.display = "inline-block";
-        if (yearSelectorGroups) yearSelectorGroups.style.display = "none";
-      } else if (type === "year") {
-        if (monthSelectorGroups) monthSelectorGroups.style.display = "none";
-        if (yearSelectorGroups) yearSelectorGroups.style.display = "inline-block";
-      } else {
-        if (monthSelectorGroups) monthSelectorGroups.style.display = "none";
-        if (yearSelectorGroups) yearSelectorGroups.style.display = "none";
-      }
-      
-      renderChartGroups();
-    });
+chartTabsGroups.forEach(tab => {
+  tab.addEventListener("click", () => {
+    chartTabsGroups.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    
+    const type = tab.dataset.type;
+    chartTypeGroups = type;
+    
+    if (type === "month") {
+      monthSelectorGroups.style.display = "inline-block";
+      yearSelectorGroups.style.display = "none";
+    } else if (type === "year") {
+      monthSelectorGroups.style.display = "none";
+      yearSelectorGroups.style.display = "inline-block";
+    } else {
+      monthSelectorGroups.style.display = "none";
+      yearSelectorGroups.style.display = "none";
+    }
+    
+    renderChartGroups();
   });
-}
+});
 
 // 月份選擇器變更事件（群組頁面）
-if (monthSelectorGroups) {
-  monthSelectorGroups.addEventListener("change", () => {
-    selectedMonthGroups = monthSelectorGroups.value;
-    if (chartTypeGroups === "month") {
-      renderChartGroups();
-    }
-  });
-}
+monthSelectorGroups.addEventListener("change", () => {
+  selectedMonthGroups = monthSelectorGroups.value;
+  if (chartTypeGroups === "month") {
+    renderChartGroups();
+  }
+});
 
 // 年份選擇器變更事件（群組頁面）
-if (yearSelectorGroups) {
-  yearSelectorGroups.addEventListener("change", () => {
-    selectedYearGroups = yearSelectorGroups.value;
-    if (chartTypeGroups === "year") {
-      renderChartGroups();
-    }
-  });
-}
+yearSelectorGroups.addEventListener("change", () => {
+  selectedYearGroups = yearSelectorGroups.value;
+  if (chartTypeGroups === "year") {
+    renderChartGroups();
+  }
+});
 
 // 篩選功能（群組頁面）
 function updateFilterCategoryOptionsGroups() {
