@@ -1342,9 +1342,13 @@ function batchSyncMemberToPersonal(memberName) {
 }
 
 // 關閉管理成員 Modal
-closeMembersModal.addEventListener("click", () => {
-  manageMembersModal.style.display = "none";
-});
+if (closeMembersModal) {
+  closeMembersModal.addEventListener("click", () => {
+    if (manageMembersModal) {
+      manageMembersModal.style.display = "none";
+    }
+  });
+}
 
 // 點擊 Modal 外部關閉
 window.addEventListener("click", (e) => {
@@ -1759,11 +1763,6 @@ function syncToPersonal(recordId) {
   
   // 如果目前在個人頁面，立即更新顯示
   if (currentPage === 'main') {
-    renderAll();
-  }
-  
-  alert("已成功同步到個人收支紀錄！");
-}
     renderAll();
   }
   
