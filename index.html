@@ -247,6 +247,19 @@
       <h3>新增收支紀錄</h3>
       <form id="tx-form-groups">
         <div class="row">
+          <select name="member" id="member-select-groups">
+            <option value="">無</option>
+            <option value="其他">其他</option>
+          </select>
+
+          <input
+            type="text"
+            id="custom-member-groups"
+            class="custom-category"
+            placeholder="輸入成員名稱"
+            autocomplete="off"
+          />
+          
           <select name="type" required>
             <option value="支出">支出</option>
             <option value="收入">收入</option>
@@ -272,21 +285,6 @@
           />
 
           <input type="date" name="date" id="date-input-groups" required />
-        </div>
-
-        <div class="row">
-          <select name="member" id="member-select-groups">
-            <option value="">無</option>
-            <option value="其他">其他</option>
-          </select>
-
-          <input
-            type="text"
-            id="custom-member-groups"
-            class="custom-category"
-            placeholder="輸入新成員名稱"
-            autocomplete="off"
-          />
           
           <button type="button" id="manage-members-btn" class="btn" style="white-space: nowrap;">管理成員</button>
         </div>

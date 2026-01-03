@@ -1237,16 +1237,22 @@ function renderChartGroups() {
       dataToChart = recordsGroups.filter(r => r.date.startsWith(selectedYearGroups));
     }
     
-    const categoryMap = {};
+    // Calculate income and expense totals
+    let income = 0;
+    let expense = 0;
+    
     dataToChart.forEach(r => {
-      if (!categoryMap[r.category]) {
-        categoryMap[r.category] = 0;
+      if (r.type === "收入") {
+        income += r.amount;
+      } else if (r.type === "支出") {
+        expense += r.amount;
       }
-      categoryMap[r.category] += r.amount;
     });
     
-    const labels = Object.keys(categoryMap);
-    const data = Object.values(categoryMap);
+    const hasData = (income + expense) > 0;
+    const labels = hasData ? ["收入", "支出"] : ["尚無資料", "尚無資料"];
+    const data = hasData ? [income, expense] : [1, 1];
+    const colors = hasData ? ["#77ddaa", "#ff7b7b"] : ["#eee", "#eee"];
     
     if (pieChartGroups) {
       pieChartGroups.destroy();
@@ -1259,17 +1265,20 @@ function renderChartGroups() {
         labels: labels,
         datasets: [{
           data: data,
-          backgroundColor: [
-            "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
-            "#9966FF", "#FF9F40", "#FF6384", "#C9CBCF"
-          ]
+          backgroundColor: colors,
+          borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "bottom" }
+          legend: { position: "bottom" },
+          tooltip: {
+            callbacks: {
+              label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+            }
+          }
         }
       }
     });
