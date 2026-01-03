@@ -444,7 +444,7 @@ function renderSummary() {
   totalExpenseEl.textContent = fmt(expense);
   balanceEl.textContent = fmt(balance);
   
-  // Update balance color to green
+  // Apply dynamic color to balance: green if positive, red if negative, default if zero
   if (balance > 0) {
     balanceEl.className = "kpi income";
   } else if (balance < 0) {
@@ -1207,7 +1207,7 @@ function updateSummaryGroups() {
   const expense = recordsGroups.filter(r => r.type === "支出").reduce((sum, r) => sum + r.amount, 0);
   const balance = income - expense;
   
-  // Apply green color to income, red color to expense
+  // Explicitly set income to green and expense to red
   totalIncomeElGroups.textContent = income.toLocaleString();
   totalIncomeElGroups.className = "kpi income";
   
@@ -1216,6 +1216,7 @@ function updateSummaryGroups() {
   
   balanceElGroups.textContent = balance.toLocaleString();
   
+  // Apply dynamic color to balance: green if positive, red if negative, default if zero
   if (balance > 0) {
     balanceElGroups.className = "kpi income";
   } else if (balance < 0) {
