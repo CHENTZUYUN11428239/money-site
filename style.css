@@ -564,3 +564,46 @@ header {
   background: #e8f5e9;
   color: #2e7d32;
 }
+
+/* ===== 成員管理 ===== */
+.members-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e6e8ee;
+}
+
+.member-item .member-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.member-item .btn-delete-member {
+  padding: 6px 12px;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.member-item .btn-delete-member:hover {
+  background: #c0392b;
+}
+
+.member-item .btn-delete-member:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
