@@ -1289,6 +1289,9 @@ function batchSyncMemberToPersonal(memberName) {
     return;
   }
   
+  // 先載入當前使用者的個人紀錄，確保不會覆蓋現有紀錄
+  records = getUserRecords();
+  
   // 篩選出該成員的所有紀錄
   const memberRecords = recordsGroups.filter(r => r.member === memberName);
   
@@ -1308,11 +1311,14 @@ function batchSyncMemberToPersonal(memberName) {
     }
   }
   
+  // 找出最大的現有 ID，確保新 ID 不會重複
+  let maxId = records.length > 0 ? Math.max(...records.map(r => r.id)) : Date.now();
+  
   // 批次建立個人紀錄
   let syncCount = 0;
   memberRecords.forEach(groupRecord => {
     const personalRecord = {
-      id: Date.now() + syncCount, // 確保每筆紀錄有唯一 ID
+      id: maxId + syncCount + 1, // 從最大 ID 遞增，確保唯一性
       type: groupRecord.type,
       amount: groupRecord.amount,
       category: `[${groupName}] ${groupRecord.category}`,
@@ -1716,6 +1722,9 @@ function syncToPersonal(recordId) {
     return;
   }
   
+  // 先載入當前使用者的個人紀錄，確保不會覆蓋現有紀錄
+  records = getUserRecords();
+  
   // 找到對應的群組紀錄
   const groupRecord = recordsGroups.find(r => r.id === recordId);
   if (!groupRecord) {
@@ -1750,6 +1759,11 @@ function syncToPersonal(recordId) {
   
   // 如果目前在個人頁面，立即更新顯示
   if (currentPage === 'main') {
+    renderAll();
+  }
+  
+  alert("已成功同步到個人收支紀錄！");
+}
     renderAll();
   }
   
