@@ -349,7 +349,15 @@ function loginUser(username, password) {
 // 登出
 function logoutUser() {
   currentUser = null;
+  currentGroup = null; // 清除當前群組
   localStorage.removeItem("currentUser");
+  
+  // 重置所有資料為初始狀態
+  records = [];
+  recordsGroups = [];
+  userGroups = [];
+  categories = ["飲食", "交通", "娛樂", "購物", "其他"];
+  categoriesGroups = ["飲食", "交通", "娛樂", "購物", "其他"];
 }
 
 // 檢查登入狀態
@@ -425,8 +433,18 @@ logoutBtn.addEventListener("click", () => {
   if (confirm("確定要登出嗎？")) {
     logoutUser();
     updateAuthUI();
+    
+    // 重置個人頁面顯示
     renderRecords();
     renderSummary();
+    renderChart();
+    
+    // 重置群組頁面顯示
+    renderRecordsGroups();
+    updateSummaryGroups();
+    renderChartGroups();
+    updateGroupHeader();
+    
     alert("已成功登出");
   }
 });
@@ -1218,11 +1236,11 @@ categorySelectGroups.addEventListener("change", () => {
 });
 
 // 成員管理功能
-// 取得成員清單的 localStorage key
+// 取得成員清單的 localStorage key (per group)
 function getMembersKey() {
   const currentUser = localStorage.getItem("currentUser");
-  if (!currentUser) return null;
-  return `members_${currentUser}`;
+  if (!currentUser || !currentGroup) return null;
+  return `members_${currentUser}_${currentGroup.id}`;
 }
 
 // 載入成員清單
