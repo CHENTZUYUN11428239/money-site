@@ -443,6 +443,15 @@ function renderSummary() {
   totalIncomeEl.textContent = fmt(income);
   totalExpenseEl.textContent = fmt(expense);
   balanceEl.textContent = fmt(balance);
+  
+  // Apply dynamic color to balance: green if positive, red if negative, default if zero
+  if (balance > 0) {
+    balanceEl.className = "kpi income";
+  } else if (balance < 0) {
+    balanceEl.className = "kpi expense";
+  } else {
+    balanceEl.className = "kpi balance";
+  }
 }
 
 function renderTable() {
@@ -1166,8 +1175,9 @@ function deleteRecordGroups(id) {
 // 渲染紀錄列表（群組頁面）
 function renderRecordsGroups(filteredRecords = null) {
   const dataToRender = filteredRecords || recordsGroups;
+  // Sort by ID in descending order to show newest first
   const sorted = dataToRender.slice().sort((a, b) => {
-    return new Date(b.date) - new Date(a.date);
+    return b.id - a.id;
   });
   
   tbodyGroups.innerHTML = "";
@@ -1183,7 +1193,7 @@ function renderRecordsGroups(filteredRecords = null) {
       <td>${r.member || ""}</td>
       <td>${r.note}</td>
       <td>
-        <button class="btn primary small" onclick="syncToPersonal(${r.id})" style="margin-right: 5px;">同步自己的收支到個人</button>
+        <button class="btn primary small" onclick="syncToPersonal(${r.id})" style="margin-right: 5px;">同步到個人</button>
         <button class="btn danger small" onclick="deleteRecordGroups(${r.id})">刪除</button>
       </td>
     `;
@@ -1197,10 +1207,16 @@ function updateSummaryGroups() {
   const expense = recordsGroups.filter(r => r.type === "支出").reduce((sum, r) => sum + r.amount, 0);
   const balance = income - expense;
   
+  // Explicitly set income to green and expense to red
   totalIncomeElGroups.textContent = income.toLocaleString();
+  totalIncomeElGroups.className = "kpi income";
+  
   totalExpenseElGroups.textContent = expense.toLocaleString();
+  totalExpenseElGroups.className = "kpi expense";
+  
   balanceElGroups.textContent = balance.toLocaleString();
   
+  // Apply dynamic color to balance: green if positive, red if negative, default if zero
   if (balance > 0) {
     balanceElGroups.className = "kpi income";
   } else if (balance < 0) {
