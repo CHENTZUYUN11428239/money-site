@@ -1,5 +1,6 @@
 /* ===== 頁面路由系統 ===== */
 let currentPage = 'main'; // 'main' 或 'groups'
+let currentGroup = null; // 當前選擇的群組
 
 /* ===== 常數定義 ===== */
 const GROUP_PREFIX = '[群組]'; // 群組同步到個人時的分類前綴
@@ -144,6 +145,7 @@ function renderGroupsInSidebar() {
     groupItem.textContent = group.name;
     groupItem.addEventListener("click", (e) => {
       e.preventDefault();
+      currentGroup = group; // 設置當前群組
       showPage('groups');
       closeSidebar();
       // TODO: Switch to specific group when multiple groups are supported
@@ -243,6 +245,9 @@ if (addGroupForm) {
     
     existingGroups.push(newGroup);
     saveGroups(existingGroups);
+    
+    // 設置為當前群組
+    currentGroup = newGroup;
     
     // Update UI
     renderGroupsInSidebar();
@@ -1372,9 +1377,10 @@ function deleteRecordGroups(id) {
 // 渲染紀錄列表（群組頁面）
 function renderRecordsGroups(filteredRecords = null) {
   const dataToRender = filteredRecords || recordsGroups;
-  // Sort by date ascending (oldest to newest, furthest from now to nearest)
+  // Sort by date descending (newest first), then by ID descending (newest first) for same dates
   const sorted = dataToRender.slice().sort((a, b) => {
-    return new Date(a.date) - new Date(b.date);
+    if (a.date === b.date) return b.id - a.id;
+    return (a.date > b.date) ? -1 : 1;
   });
   
   tbodyGroups.innerHTML = "";
@@ -1627,12 +1633,23 @@ function syncToPersonal(recordId) {
     return;
   }
   
-  // 建立新的個人紀錄，category 加上群組前綴
+  // 取得當前群組名稱（如果沒有，使用第一個群組的名稱）
+  let groupName = "群組";
+  if (currentGroup) {
+    groupName = currentGroup.name;
+  } else {
+    const groups = loadGroups();
+    if (groups.length > 0) {
+      groupName = groups[0].name;
+    }
+  }
+  
+  // 建立新的個人紀錄，category 加上群組名稱前綴
   const personalRecord = {
     id: Date.now(),
     type: groupRecord.type,
     amount: groupRecord.amount,
-    category: `${GROUP_PREFIX} ${groupRecord.category}`,
+    category: `[${groupName}] ${groupRecord.category}`,
     date: groupRecord.date,
     note: groupRecord.note || ""
   };
