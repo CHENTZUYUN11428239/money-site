@@ -69,12 +69,134 @@ document.getElementById("home-link").addEventListener("click", (e) => {
   closeSidebar();
 });
 
-// 群組捷徑連結點擊事件
-document.getElementById("groups-link").addEventListener("click", (e) => {
+// 群組標題點擊事件（展開/收起群組列表）
+const groupsHeader = document.getElementById("groups-header");
+const groupsList = document.getElementById("groups-list");
+
+groupsHeader.addEventListener("click", () => {
+  const isExpanded = groupsList.style.display === "block";
+  groupsList.style.display = isExpanded ? "none" : "block";
+  groupsHeader.classList.toggle("expanded", !isExpanded);
+});
+
+/* ===== 群組管理 ===== */
+let userGroups = []; // Store user's groups
+
+// Get groups key for current user
+function getGroupsKey() {
+  if (!currentUser) return null;
+  return `groups_${currentUser}`;
+}
+
+// Load groups from localStorage
+function loadGroups() {
+  const key = getGroupsKey();
+  if (!key) return [];
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : [];
+}
+
+// Save groups to localStorage
+function saveGroups(groups) {
+  const key = getGroupsKey();
+  if (key) {
+    localStorage.setItem(key, JSON.stringify(groups));
+  }
+}
+
+// Render groups in sidebar
+function renderGroupsInSidebar() {
+  const groupsList = document.getElementById("groups-list");
+  userGroups = loadGroups();
+  
+  groupsList.innerHTML = "";
+  
+  if (userGroups.length === 0) {
+    groupsList.innerHTML = '<div style="padding: 12px 20px 12px 40px; color: #999; font-size: 13px;">尚無群組</div>';
+    return;
+  }
+  
+  userGroups.forEach(group => {
+    const groupItem = document.createElement("a");
+    groupItem.className = "sidebar-group-item";
+    groupItem.href = "#";
+    groupItem.textContent = group.name;
+    groupItem.addEventListener("click", (e) => {
+      e.preventDefault();
+      showPage('groups');
+      closeSidebar();
+      // TODO: Switch to specific group when multiple groups are supported
+    });
+    groupsList.appendChild(groupItem);
+  });
+}
+
+// Add Group Modal
+const addGroupBtn = document.getElementById("add-group-btn");
+const addGroupModal = document.getElementById("add-group-modal");
+const addGroupModalClose = document.getElementById("add-group-modal-close");
+const addGroupModalCancel = document.getElementById("add-group-modal-cancel");
+const addGroupForm = document.getElementById("add-group-form");
+
+// Open modal
+addGroupBtn.addEventListener("click", () => {
+  addGroupModal.classList.add("show");
+});
+
+// Close modal
+function closeAddGroupModal() {
+  addGroupModal.classList.remove("show");
+  addGroupForm.reset();
+}
+
+addGroupModalClose.addEventListener("click", closeAddGroupModal);
+addGroupModalCancel.addEventListener("click", closeAddGroupModal);
+
+// Close modal when clicking outside
+addGroupModal.addEventListener("click", (e) => {
+  if (e.target === addGroupModal) {
+    closeAddGroupModal();
+  }
+});
+
+// Handle form submission
+addGroupForm.addEventListener("submit", (e) => {
   e.preventDefault();
+  
+  const groupName = document.getElementById("group-name-input").value.trim();
+  const groupDesc = document.getElementById("group-desc-input").value.trim();
+  
+  if (!groupName) {
+    alert("請輸入群組名稱");
+    return;
+  }
+  
+  // Check if group name already exists
+  const existingGroups = loadGroups();
+  if (existingGroups.some(g => g.name === groupName)) {
+    alert("群組名稱已存在，請使用其他名稱");
+    return;
+  }
+  
+  // Create new group
+  const newGroup = {
+    id: Date.now(),
+    name: groupName,
+    description: groupDesc,
+    createdAt: new Date().toISOString()
+  };
+  
+  existingGroups.push(newGroup);
+  saveGroups(existingGroups);
+  
+  // Update UI
+  renderGroupsInSidebar();
+  closeAddGroupModal();
+  
+  alert(`群組「${groupName}」已成功建立！`);
+  
+  // Switch to groups page
   showPage('groups');
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  closeSidebar();
 });
 
 /* ===== 使用者認證系統 ===== */
@@ -184,6 +306,8 @@ function updateAuthUI() {
     } else if (addGroupBtn) {
       addGroupBtn.style.display = "none";
     }
+    // Render groups in sidebar
+    renderGroupsInSidebar();
   } else {
     loginBtn.style.display = "block";
     registerBtn.style.display = "block";
@@ -216,10 +340,6 @@ logoutBtn.addEventListener("click", () => {
   }
 });
 
-// 新增群組按鈕事件
-addGroupBtn.addEventListener("click", () => {
-  alert("新增群組功能開發中...");
-});
 
 loginBtn.addEventListener("click", () => {
   loginModal.style.display = "block";
@@ -1175,9 +1295,9 @@ function deleteRecordGroups(id) {
 // 渲染紀錄列表（群組頁面）
 function renderRecordsGroups(filteredRecords = null) {
   const dataToRender = filteredRecords || recordsGroups;
-  // Sort by ID in descending order to show newest first
+  // Sort by date ascending (oldest to newest, furthest from now to nearest)
   const sorted = dataToRender.slice().sort((a, b) => {
-    return b.id - a.id;
+    return new Date(a.date) - new Date(b.date);
   });
   
   tbodyGroups.innerHTML = "";
