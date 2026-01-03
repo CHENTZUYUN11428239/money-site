@@ -1059,10 +1059,18 @@ function renderMembersList() {
   members.forEach(member => {
     const item = document.createElement("div");
     item.className = "member-item";
-    item.innerHTML = `
-      <span class="member-name">${member}</span>
-      <button class="btn-delete-member" onclick="deleteMember('${member}')">刪除</button>
-    `;
+    
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "member-name";
+    nameSpan.textContent = member;
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn-delete-member";
+    deleteBtn.textContent = "刪除";
+    deleteBtn.addEventListener("click", () => deleteMember(member));
+    
+    item.appendChild(nameSpan);
+    item.appendChild(deleteBtn);
     membersList.appendChild(item);
   });
 }
