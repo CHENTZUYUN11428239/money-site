@@ -22,42 +22,12 @@
     </div>
     <nav class="sidebar-nav">
       <a href="#" class="sidebar-link" id="home-link">👤 個人</a>
-      <div class="sidebar-groups">
-        <div class="sidebar-groups-header" id="groups-header">
-          <span>👥 群組</span>
-          <span class="expand-icon">▼</span>
-        </div>
-        <div class="sidebar-groups-list" id="groups-list" style="display: none;">
-          <!-- Group names will be dynamically added here -->
-        </div>
-      </div>
+      <a href="#" class="sidebar-link" id="groups-link">👥 群組</a>
     </nav>
   </div>
 
   <!-- 側邊欄遮罩 -->
   <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
-  <!-- 新增群組彈窗 -->
-  <div id="add-group-modal" class="modal">
-    <div class="modal-content">
-      <span class="modal-close" id="add-group-modal-close">&times;</span>
-      <h2>新增群組</h2>
-      <form id="add-group-form">
-        <div class="form-group">
-          <label for="group-name-input">群組名稱</label>
-          <input type="text" id="group-name-input" placeholder="輸入群組名稱" required />
-        </div>
-        <div class="form-group">
-          <label for="group-desc-input">群組說明（選填）</label>
-          <textarea id="group-desc-input" placeholder="群組說明或用途" rows="3"></textarea>
-        </div>
-        <div class="modal-actions">
-          <button type="submit" class="btn primary">建立群組</button>
-          <button type="button" class="btn" id="add-group-modal-cancel">取消</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- 右上角登入/註冊區域 -->
   <div id="auth-section" class="auth-section">
