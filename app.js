@@ -878,6 +878,14 @@ const yearSelectorGroups = document.getElementById("year-selector-groups");
 const categorySelectGroups = document.getElementById("category-select-groups");
 const customCategoryInputGroups = document.getElementById("custom-category-groups");
 
+// 成員管理相關
+const memberSelectGroups = document.getElementById("member-select-groups");
+const customMemberInputGroups = document.getElementById("custom-member-groups");
+const manageMembersBtn = document.getElementById("manage-members-btn");
+const manageMembersModal = document.getElementById("manage-members-modal");
+const closeMembersModal = document.getElementById("close-manage-members");
+const membersList = document.getElementById("members-list");
+
 let recordsGroups = [];
 let pieChartGroups = null;
 let chartTypeGroups = "total";
@@ -958,6 +966,131 @@ categorySelectGroups.addEventListener("change", () => {
   }
 });
 
+// 成員管理功能
+// 取得成員清單的 localStorage key
+function getMembersKey() {
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) return null;
+  return `members_${currentUser}`;
+}
+
+// 載入成員清單
+function loadMembers() {
+  const key = getMembersKey();
+  if (!key) return [];
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : [];
+}
+
+// 儲存成員清單
+function saveMembers(members) {
+  const key = getMembersKey();
+  if (!key) return;
+  localStorage.setItem(key, JSON.stringify(members));
+}
+
+// 更新成員下拉選單
+function updateMemberSelect() {
+  const members = loadMembers();
+  const currentValue = memberSelectGroups.value;
+  
+  // 清空選項（保留「無」和「其他」）
+  memberSelectGroups.innerHTML = '<option value="">無</option>';
+  
+  // 新增自訂成員選項
+  members.forEach(member => {
+    const option = document.createElement("option");
+    option.value = member;
+    option.textContent = member;
+    memberSelectGroups.appendChild(option);
+  });
+  
+  // 新增「其他」選項在最後
+  const otherOption = document.createElement("option");
+  otherOption.value = "其他";
+  otherOption.textContent = "其他";
+  memberSelectGroups.appendChild(otherOption);
+  
+  // 恢復選擇
+  if (currentValue && (currentValue === "" || currentValue === "其他" || members.includes(currentValue))) {
+    memberSelectGroups.value = currentValue;
+  }
+}
+
+// 成員下拉選單變更處理
+memberSelectGroups.addEventListener("change", () => {
+  if (memberSelectGroups.value === "其他") {
+    customMemberInputGroups.style.display = "block";
+    customMemberInputGroups.focus();
+  } else {
+    customMemberInputGroups.style.display = "none";
+    customMemberInputGroups.value = "";
+  }
+});
+
+// 管理成員按鈕點擊
+manageMembersBtn.addEventListener("click", () => {
+  renderMembersList();
+  manageMembersModal.style.display = "block";
+});
+
+// 關閉管理成員 Modal
+closeMembersModal.addEventListener("click", () => {
+  manageMembersModal.style.display = "none";
+});
+
+// 點擊 Modal 外部關閉
+window.addEventListener("click", (e) => {
+  if (e.target === manageMembersModal) {
+    manageMembersModal.style.display = "none";
+  }
+});
+
+// 渲染成員清單
+function renderMembersList() {
+  const members = loadMembers();
+  membersList.innerHTML = "";
+  
+  if (members.length === 0) {
+    membersList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">尚無自訂成員</p>';
+    return;
+  }
+  
+  members.forEach(member => {
+    const item = document.createElement("div");
+    item.className = "member-item";
+    
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "member-name";
+    nameSpan.textContent = member;
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn-delete-member";
+    deleteBtn.textContent = "刪除";
+    deleteBtn.addEventListener("click", () => deleteMember(member));
+    
+    item.appendChild(nameSpan);
+    item.appendChild(deleteBtn);
+    membersList.appendChild(item);
+  });
+}
+
+// 刪除成員
+function deleteMember(memberName) {
+  if (!confirm(`確定要刪除成員「${memberName}」嗎？`)) return;
+  
+  let members = loadMembers();
+  members = members.filter(m => m !== memberName);
+  saveMembers(members);
+  
+  updateMemberSelect();
+  renderMembersList();
+  updateFilterMemberOptionsGroups();
+}
+
+// 初始化成員下拉選單
+updateMemberSelect();
+
 // 新增紀錄（群組頁面）
 formGroups.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -970,9 +1103,29 @@ formGroups.addEventListener("submit", (e) => {
   
   const fd = new FormData(formGroups);
   let category = fd.get("category");
+  let member = fd.get("member");
   
   if (category === "其他" && customCategoryInputGroups.value.trim()) {
     category = customCategoryInputGroups.value.trim();
+  }
+  
+  // 處理成員欄位
+  if (member === "其他") {
+    const customMember = customMemberInputGroups.value.trim();
+    if (!customMember) {
+      alert("請輸入成員名稱");
+      return;
+    }
+    member = customMember;
+    
+    // 將新成員加入清單
+    let members = loadMembers();
+    if (!members.includes(customMember)) {
+      members.push(customMember);
+      saveMembers(members);
+      updateMemberSelect();
+      updateFilterMemberOptionsGroups();
+    }
   }
   
   const record = {
@@ -981,7 +1134,7 @@ formGroups.addEventListener("submit", (e) => {
     amount: parseFloat(fd.get("amount")),
     category: category,
     date: fd.get("date"),
-    member: fd.get("member") || "",
+    member: member || "",
     note: fd.get("note") || ""
   };
   
@@ -990,11 +1143,13 @@ formGroups.addEventListener("submit", (e) => {
   formGroups.reset();
   dateInputGroups.valueAsDate = new Date();
   customCategoryInputGroups.style.display = "none";
+  customMemberInputGroups.style.display = "none";
   
   renderRecordsGroups();
   updateSummaryGroups();
   renderChartGroups();
   updateFilterCategoryOptionsGroups();
+  updateFilterMemberOptionsGroups();
 });
 
 // 刪除紀錄（群組頁面）
@@ -1182,11 +1337,32 @@ function updateFilterCategoryOptionsGroups() {
   });
 }
 
+function updateFilterMemberOptionsGroups() {
+  const memberSelect = document.getElementById("filter-member-groups");
+  const members = new Set();
+  
+  recordsGroups.forEach(r => {
+    if (r.member) {
+      members.add(r.member);
+    }
+  });
+  
+  memberSelect.innerHTML = '<option value="">全部成員</option>';
+  
+  Array.from(members).sort().forEach(member => {
+    const opt = document.createElement("option");
+    opt.value = member;
+    opt.textContent = member;
+    memberSelect.appendChild(opt);
+  });
+}
+
 document.getElementById("apply-filter-btn-groups").addEventListener("click", () => {
   const year = document.getElementById("filter-year-groups").value;
   const month = document.getElementById("filter-month-groups").value;
   const day = document.getElementById("filter-day-groups").value;
   const category = document.getElementById("filter-category-groups").value;
+  const member = document.getElementById("filter-member-groups").value;
   
   let filtered = recordsGroups;
   
@@ -1194,6 +1370,7 @@ document.getElementById("apply-filter-btn-groups").addEventListener("click", () 
   if (month) filtered = filtered.filter(r => r.date.substring(5, 7) === month.padStart(2, '0'));
   if (day) filtered = filtered.filter(r => r.date.substring(8, 10) === day.padStart(2, '0'));
   if (category) filtered = filtered.filter(r => r.category === category);
+  if (member) filtered = filtered.filter(r => r.member === member);
   
   renderRecordsGroups(filtered);
 });
@@ -1203,6 +1380,7 @@ document.getElementById("clear-filter-btn-groups").addEventListener("click", () 
   document.getElementById("filter-month-groups").value = "";
   document.getElementById("filter-day-groups").value = "";
   document.getElementById("filter-category-groups").value = "";
+  document.getElementById("filter-member-groups").value = "";
   renderRecordsGroups();
 });
 
@@ -1246,10 +1424,12 @@ function syncToPersonal(recordId) {
 // 初始化群組頁面
 function initGroupsPage() {
   loadRecordsGroups();
+  updateMemberSelect();
   renderRecordsGroups();
   updateSummaryGroups();
   renderChartGroups();
   updateFilterCategoryOptionsGroups();
+  updateFilterMemberOptionsGroups();
 }
 
 // 當切換到群組頁面時初始化
