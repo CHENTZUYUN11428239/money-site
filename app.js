@@ -434,6 +434,9 @@ logoutBtn.addEventListener("click", () => {
     logoutUser();
     updateAuthUI();
     
+    // 導航到個人頁面
+    showPage('main');
+    
     // 重置個人頁面顯示
     renderRecords();
     renderSummary();
