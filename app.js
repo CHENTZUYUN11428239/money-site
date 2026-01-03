@@ -144,67 +144,95 @@ let addGroupBtn;
 function initializeAddGroupModal() {
   addGroupBtn = document.getElementById("add-group-btn");
   
+  if (!addGroupBtn) {
+    console.warn("addGroupBtn not found, will initialize later");
+    return;
+  }
+  
   // Open modal
   addGroupBtn.addEventListener("click", () => {
-    addGroupModal.classList.add("show");
+    if (addGroupModal) {
+      addGroupModal.classList.add("show");
+    }
   });
 }
 
 // Close modal
 function closeAddGroupModal() {
-  addGroupModal.classList.remove("show");
-  addGroupForm.reset();
+  if (addGroupModal) {
+    addGroupModal.classList.remove("show");
+  }
+  if (addGroupForm) {
+    addGroupForm.reset();
+  }
 }
 
-addGroupModalClose.addEventListener("click", closeAddGroupModal);
-addGroupModalCancel.addEventListener("click", closeAddGroupModal);
+if (addGroupModalClose) {
+  addGroupModalClose.addEventListener("click", closeAddGroupModal);
+}
+
+if (addGroupModalCancel) {
+  addGroupModalCancel.addEventListener("click", closeAddGroupModal);
+}
 
 // Close modal when clicking outside
-addGroupModal.addEventListener("click", (e) => {
-  if (e.target === addGroupModal) {
-    closeAddGroupModal();
-  }
-});
+if (addGroupModal) {
+  addGroupModal.addEventListener("click", (e) => {
+    if (e.target === addGroupModal) {
+      closeAddGroupModal();
+    }
+  });
+}
 
 // Handle form submission
-addGroupForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  
-  const groupName = document.getElementById("group-name-input").value.trim();
-  const groupDesc = document.getElementById("group-desc-input").value.trim();
-  
-  if (!groupName) {
-    alert("請輸入群組名稱");
-    return;
-  }
-  
-  // Check if group name already exists
-  const existingGroups = loadGroups();
-  if (existingGroups.some(g => g.name === groupName)) {
-    alert("群組名稱已存在，請使用其他名稱");
-    return;
-  }
-  
-  // Create new group
-  const newGroup = {
-    id: Date.now(),
-    name: groupName,
-    description: groupDesc,
-    createdAt: new Date().toISOString()
-  };
-  
-  existingGroups.push(newGroup);
-  saveGroups(existingGroups);
-  
-  // Update UI
-  renderGroupsInSidebar();
-  closeAddGroupModal();
-  
-  alert(`群組「${groupName}」已成功建立！`);
-  
-  // Switch to groups page
-  showPage('groups');
-});
+if (addGroupForm) {
+  addGroupForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    
+    const groupNameInput = document.getElementById("group-name-input");
+    const groupDescInput = document.getElementById("group-desc-input");
+    
+    if (!groupNameInput || !groupDescInput) {
+      console.error("Form input elements not found");
+      return;
+    }
+    
+    const groupName = groupNameInput.value.trim();
+    const groupDesc = groupDescInput.value.trim();
+    
+    if (!groupName) {
+      alert("請輸入群組名稱");
+      return;
+    }
+    
+    // Check if group name already exists
+    const existingGroups = loadGroups();
+    if (existingGroups.some(g => g.name === groupName)) {
+      alert("群組名稱已存在，請使用其他名稱");
+      return;
+    }
+    
+    // Create new group
+    const newGroup = {
+      id: Date.now(),
+      name: groupName,
+      description: groupDesc,
+      createdAt: new Date().toISOString()
+    };
+    
+    existingGroups.push(newGroup);
+    saveGroups(existingGroups);
+    
+    // Update UI
+    renderGroupsInSidebar();
+    closeAddGroupModal();
+    
+    alert(`群組「${groupName}」已成功建立！`);
+    
+    // Switch to groups page
+    showPage('groups');
+  });
+}
 
 /* ===== 使用者認證系統 ===== */
 let currentUser = null;
