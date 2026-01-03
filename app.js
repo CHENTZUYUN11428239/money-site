@@ -111,8 +111,29 @@ function renderGroupsInSidebar() {
   
   groupsList.innerHTML = "";
   
+  // Add "新增群組" link at the top
+  const addGroupLink = document.createElement("a");
+  addGroupLink.className = "sidebar-group-item add-group-link";
+  addGroupLink.href = "#";
+  addGroupLink.textContent = "+ 新增群組";
+  addGroupLink.style.fontWeight = "bold";
+  addGroupLink.style.color = "#3498db";
+  addGroupLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (addGroupModal) {
+      addGroupModal.classList.add("show");
+    }
+    closeSidebar();
+  });
+  groupsList.appendChild(addGroupLink);
+  
   if (userGroups.length === 0) {
-    groupsList.innerHTML = '<div style="padding: 12px 20px 12px 40px; color: #999; font-size: 13px;">尚無群組</div>';
+    const emptyMsg = document.createElement("div");
+    emptyMsg.style.padding = "12px 20px 12px 40px";
+    emptyMsg.style.color = "#999";
+    emptyMsg.style.fontSize = "13px";
+    emptyMsg.textContent = "尚無群組";
+    groupsList.appendChild(emptyMsg);
     return;
   }
   
@@ -937,30 +958,49 @@ if (currentUser) {
 /* ===== 圖表類型切換功能 ===== */
 const chartTabs = document.querySelectorAll(".chart-tab");
 
-chartTabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    // 更新活動狀態
-    chartTabs.forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
+if (chartTabs && chartTabs.length > 0) {
+  chartTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      // 更新活動狀態
+      chartTabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
 
-    // 更新圖表類型並重新渲染
-    currentChartType = tab.dataset.type;
-    renderChart();
+      // 更新圖表類型並重新渲染
+      currentChartType = tab.dataset.type;
+      
+      // 控制選擇器顯示/隱藏
+      if (currentChartType === "month") {
+        if (monthSelector) monthSelector.style.display = "inline-block";
+        if (yearSelector) yearSelector.style.display = "none";
+      } else if (currentChartType === "year") {
+        if (monthSelector) monthSelector.style.display = "none";
+        if (yearSelector) yearSelector.style.display = "inline-block";
+      } else {
+        if (monthSelector) monthSelector.style.display = "none";
+        if (yearSelector) yearSelector.style.display = "none";
+      }
+      
+      renderChart();
+    });
   });
-});
+}
 
 // 月份和年份選擇器事件監聽
-monthSelector.addEventListener("change", () => {
-  if (currentChartType === "month") {
-    renderChart();
-  }
-});
+if (monthSelector) {
+  monthSelector.addEventListener("change", () => {
+    if (currentChartType === "month") {
+      renderChart();
+    }
+  });
+}
 
-yearSelector.addEventListener("change", () => {
-  if (currentChartType === "year") {
-    renderChart();
-  }
-});
+if (yearSelector) {
+  yearSelector.addEventListener("change", () => {
+    if (currentChartType === "year") {
+      renderChart();
+    }
+  });
+}
 
 /* ===== 背景顏色切換功能 ===== */
 const colorBtn = document.getElementById("color-picker-btn");
@@ -1461,44 +1501,50 @@ function renderChartGroups() {
 }
 
 // 圖表切換（群組頁面）
-chartTabsGroups.forEach(tab => {
-  tab.addEventListener("click", () => {
-    chartTabsGroups.forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    
-    const type = tab.dataset.type;
-    chartTypeGroups = type;
-    
-    if (type === "month") {
-      monthSelectorGroups.style.display = "inline-block";
-      yearSelectorGroups.style.display = "none";
-    } else if (type === "year") {
-      monthSelectorGroups.style.display = "none";
-      yearSelectorGroups.style.display = "inline-block";
-    } else {
-      monthSelectorGroups.style.display = "none";
-      yearSelectorGroups.style.display = "none";
-    }
-    
-    renderChartGroups();
+if (chartTabsGroups && chartTabsGroups.length > 0) {
+  chartTabsGroups.forEach(tab => {
+    tab.addEventListener("click", () => {
+      chartTabsGroups.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      
+      const type = tab.dataset.type;
+      chartTypeGroups = type;
+      
+      if (type === "month") {
+        if (monthSelectorGroups) monthSelectorGroups.style.display = "inline-block";
+        if (yearSelectorGroups) yearSelectorGroups.style.display = "none";
+      } else if (type === "year") {
+        if (monthSelectorGroups) monthSelectorGroups.style.display = "none";
+        if (yearSelectorGroups) yearSelectorGroups.style.display = "inline-block";
+      } else {
+        if (monthSelectorGroups) monthSelectorGroups.style.display = "none";
+        if (yearSelectorGroups) yearSelectorGroups.style.display = "none";
+      }
+      
+      renderChartGroups();
+    });
   });
-});
+}
 
 // 月份選擇器變更事件（群組頁面）
-monthSelectorGroups.addEventListener("change", () => {
-  selectedMonthGroups = monthSelectorGroups.value;
-  if (chartTypeGroups === "month") {
-    renderChartGroups();
-  }
-});
+if (monthSelectorGroups) {
+  monthSelectorGroups.addEventListener("change", () => {
+    selectedMonthGroups = monthSelectorGroups.value;
+    if (chartTypeGroups === "month") {
+      renderChartGroups();
+    }
+  });
+}
 
 // 年份選擇器變更事件（群組頁面）
-yearSelectorGroups.addEventListener("change", () => {
-  selectedYearGroups = yearSelectorGroups.value;
-  if (chartTypeGroups === "year") {
-    renderChartGroups();
-  }
-});
+if (yearSelectorGroups) {
+  yearSelectorGroups.addEventListener("change", () => {
+    selectedYearGroups = yearSelectorGroups.value;
+    if (chartTypeGroups === "year") {
+      renderChartGroups();
+    }
+  });
+}
 
 // 篩選功能（群組頁面）
 function updateFilterCategoryOptionsGroups() {
