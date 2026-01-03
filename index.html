@@ -274,7 +274,22 @@
           <input type="date" name="date" id="date-input-groups" required />
         </div>
 
-        <input type="text" name="member" id="member-input-groups" placeholder="成員（選填）" />
+        <div class="row">
+          <select name="member" id="member-select-groups">
+            <option value="">無</option>
+            <option value="其他">其他</option>
+          </select>
+
+          <input
+            type="text"
+            id="custom-member-groups"
+            class="custom-category"
+            placeholder="輸入新成員名稱"
+            autocomplete="off"
+          />
+          
+          <button type="button" id="manage-members-btn" class="btn" style="white-space: nowrap;">管理成員</button>
+        </div>
 
         <textarea name="note" placeholder="備註（可留空）"></textarea>
 
@@ -301,6 +316,12 @@
           <label>類別篩選：</label>
           <select id="filter-category-groups" class="filter-select">
             <option value="">全部類別</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>成員篩選：</label>
+          <select id="filter-member-groups" class="filter-select">
+            <option value="">全部成員</option>
           </select>
         </div>
         <div class="filter-actions">
@@ -340,6 +361,15 @@
         <button type="submit" class="btn primary">登入</button>
       </form>
       <p class="form-message" id="login-message"></p>
+    </div>
+  </div>
+
+  <!-- 管理成員 Modal -->
+  <div id="manage-members-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-manage-members">&times;</span>
+      <h2>管理成員</h2>
+      <div id="members-list" class="members-list"></div>
     </div>
   </div>
 
