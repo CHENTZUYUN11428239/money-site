@@ -161,7 +161,7 @@ h1 { font-size: 28px; margin-bottom: 6px; }
 .kpi { font-size: 26px; font-weight: 700; }
 .kpi.income { color: #1f9d62; }
 .kpi.expense { color: #d64545; }
-.kpi.balance { color: #2f6fed; }
+.kpi.balance { color: #1f9d62; }
 
 .box {
   background:#fff;
