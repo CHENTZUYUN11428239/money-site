@@ -26,6 +26,26 @@ function showPage(pageName) {
     if (addGroupBtn && currentUser) {
       addGroupBtn.style.display = 'inline-block';
     }
+    // 更新群組標題和說明
+    updateGroupHeader();
+  }
+}
+
+// 更新群組頁面的標題和說明
+function updateGroupHeader() {
+  const groupTitle = document.getElementById('group-title');
+  const groupDescription = document.getElementById('group-description');
+  
+  if (!groupTitle || !groupDescription) return;
+  
+  if (currentGroup) {
+    // 使用當前群組的名稱和說明
+    groupTitle.textContent = currentGroup.name;
+    groupDescription.textContent = currentGroup.description || '與好友一起記帳，共同管理群組支出 👥💰';
+  } else {
+    // 如果沒有當前群組，使用預設值
+    groupTitle.textContent = '群組';
+    groupDescription.textContent = '與好友一起記帳，共同管理群組支出 👥💰';
   }
 }
 
@@ -146,9 +166,10 @@ function renderGroupsInSidebar() {
     groupItem.addEventListener("click", (e) => {
       e.preventDefault();
       currentGroup = group; // 設置當前群組
+      loadRecordsGroups(); // 載入該群組的紀錄
       showPage('groups');
+      renderAllGroups(); // 重新渲染頁面
       closeSidebar();
-      // TODO: Switch to specific group when multiple groups are supported
     });
     groupsList.appendChild(groupItem);
   });
@@ -249,6 +270,9 @@ if (addGroupForm) {
     // 設置為當前群組
     currentGroup = newGroup;
     
+    // 載入該群組的紀錄（新群組一開始是空的）
+    loadRecordsGroups();
+    
     // Update UI
     renderGroupsInSidebar();
     closeAddGroupModal();
@@ -257,6 +281,7 @@ if (addGroupForm) {
     
     // Switch to groups page
     showPage('groups');
+    renderAllGroups();
   });
 }
 
@@ -1103,14 +1128,23 @@ let chartTypeGroups = "total";
 let selectedMonthGroups = "";
 let selectedYearGroups = "";
 
-// 取得當前登入使用者的群組紀錄
+// 取得當前登入使用者和群組的紀錄 key
 function getGroupsRecordsKey() {
-  const currentUser = localStorage.getItem("currentUser");
-  if (!currentUser) return null;
-  return `records_groups_${currentUser}`;
+  const currentUserName = localStorage.getItem("currentUser");
+  if (!currentUserName) return null;
+  if (!currentGroup || !currentGroup.id) {
+    // 如果沒有當前群組，嘗試載入第一個群組
+    const groups = loadGroups();
+    if (groups.length > 0) {
+      currentGroup = groups[0];
+    } else {
+      return null;
+    }
+  }
+  return `records_group_${currentUserName}_${currentGroup.id}`;
 }
 
-// 載入群組紀錄
+// 載入群組紀錄（當前群組）
 function loadRecordsGroups() {
   const key = getGroupsRecordsKey();
   if (!key) {
@@ -1121,7 +1155,7 @@ function loadRecordsGroups() {
   recordsGroups = data ? JSON.parse(data) : [];
 }
 
-// 儲存群組紀錄
+// 儲存群組紀錄（當前群組）
 function saveRecordsGroups() {
   const key = getGroupsRecordsKey();
   if (!key) return;

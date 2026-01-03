@@ -218,8 +218,8 @@
   <div id="groups-page" class="page-view" style="display: none;">
     <div class="container">
       <header>
-        <h1>群組</h1>
-        <p class="subtitle">與好友一起記帳，共同管理群組支出 👥💰</p>
+        <h1 id="group-title">群組</h1>
+        <p class="subtitle" id="group-description">與好友一起記帳，共同管理群組支出 👥💰</p>
 
       <!-- 顏色選擇按鈕 -->
       <button id="color-picker-btn-groups" class="color-picker-btn" title="更換背景顏色" type="button">🎨</button>
@@ -320,14 +320,6 @@
         </div>
 
         <textarea name="note" placeholder="備註（可留空）"></textarea>
-        
-        <!-- 批次同步區域 -->
-        <div class="batch-sync-section" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-          <button type="button" id="batch-sync-btn" class="btn" style="white-space: nowrap;">一鍵同步收支到個人</button>
-          <select id="batch-sync-member-select" style="flex: 1;">
-            <option value="">選擇成員</option>
-          </select>
-        </div>
 
         <div class="actions">
           <button class="btn primary" type="submit">新增</button>
@@ -364,6 +356,14 @@
           <button id="apply-filter-btn-groups" class="btn primary" type="button">套用篩選</button>
           <button id="clear-filter-btn-groups" class="btn" type="button">清除篩選</button>
         </div>
+      </div>
+      
+      <!-- 批次同步區域 -->
+      <div class="batch-sync-section" style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
+        <button type="button" id="batch-sync-btn" class="btn" style="white-space: nowrap;">一鍵同步收支到個人</button>
+        <select id="batch-sync-member-select" style="flex: 1;">
+          <option value="">選擇成員</option>
+        </select>
       </div>
       
       <div class="table-wrap">
