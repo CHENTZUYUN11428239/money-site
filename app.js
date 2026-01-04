@@ -235,6 +235,9 @@ function renderGroupsInSidebar() {
     groupItem.className = "sidebar-group-item";
     groupItem.href = "#";
     groupItem.textContent = group.name;
+    groupItem.dataset.groupId = group.id;
+    
+    // 左鍵點擊：選擇群組
     groupItem.addEventListener("click", (e) => {
       e.preventDefault();
       currentGroup = group; // 設置當前群組
@@ -255,7 +258,156 @@ function renderGroupsInSidebar() {
       
       closeSidebar();
     });
+    
+    // 右鍵點擊：顯示選單
+    groupItem.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showGroupContextMenu(e, group);
+    });
+    
     groupsList.appendChild(groupItem);
+  });
+}
+
+// 顯示群組右鍵選單
+let contextMenuTargetGroup = null;
+
+function showGroupContextMenu(e, group) {
+  const contextMenu = document.getElementById('group-context-menu');
+  if (!contextMenu) return;
+  
+  contextMenuTargetGroup = group;
+  
+  // 設置選單位置
+  contextMenu.style.display = 'block';
+  contextMenu.style.left = e.pageX + 'px';
+  contextMenu.style.top = e.pageY + 'px';
+}
+
+// 隱藏群組右鍵選單
+function hideGroupContextMenu() {
+  const contextMenu = document.getElementById('group-context-menu');
+  if (contextMenu) {
+    contextMenu.style.display = 'none';
+  }
+  contextMenuTargetGroup = null;
+}
+
+// 點擊其他地方隱藏選單
+document.addEventListener('click', (e) => {
+  const contextMenu = document.getElementById('group-context-menu');
+  if (contextMenu && !contextMenu.contains(e.target)) {
+    hideGroupContextMenu();
+  }
+});
+
+// 編輯群組說明
+const editGroupModal = document.getElementById('edit-group-modal');
+const editGroupModalClose = document.getElementById('edit-group-modal-close');
+const editGroupModalCancel = document.getElementById('edit-group-modal-cancel');
+const editGroupForm = document.getElementById('edit-group-form');
+
+if (editGroupModalClose) {
+  editGroupModalClose.addEventListener('click', () => {
+    editGroupModal.classList.remove('show');
+  });
+}
+
+if (editGroupModalCancel) {
+  editGroupModalCancel.addEventListener('click', () => {
+    editGroupModal.classList.remove('show');
+  });
+}
+
+if (editGroupModal) {
+  editGroupModal.addEventListener('click', (e) => {
+    if (e.target === editGroupModal) {
+      editGroupModal.classList.remove('show');
+    }
+  });
+}
+
+if (editGroupForm) {
+  editGroupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    if (!contextMenuTargetGroup) return;
+    
+    const descInput = document.getElementById('edit-group-desc-input');
+    const newDescription = descInput.value.trim();
+    
+    // 更新群組說明
+    contextMenuTargetGroup.description = newDescription;
+    saveGroup(contextMenuTargetGroup);
+    
+    // 如果是當前群組，更新顯示
+    if (currentGroup && currentGroup.id === contextMenuTargetGroup.id) {
+      currentGroup.description = newDescription;
+      updateGroupHeader();
+    }
+    
+    // 關閉 modal
+    editGroupModal.classList.remove('show');
+    hideGroupContextMenu();
+    
+    alert('群組說明已更新！');
+  });
+}
+
+// 右鍵選單項目點擊事件
+const contextEditGroup = document.getElementById('context-edit-group');
+const contextDeleteGroup = document.getElementById('context-delete-group');
+
+if (contextEditGroup) {
+  contextEditGroup.addEventListener('click', () => {
+    if (!contextMenuTargetGroup) return;
+    
+    // 填入群組資料
+    document.getElementById('edit-group-name').value = contextMenuTargetGroup.name;
+    document.getElementById('edit-group-desc-input').value = contextMenuTargetGroup.description || '';
+    
+    // 顯示 modal
+    editGroupModal.classList.add('show');
+    hideGroupContextMenu();
+  });
+}
+
+if (contextDeleteGroup) {
+  contextDeleteGroup.addEventListener('click', () => {
+    if (!contextMenuTargetGroup) return;
+    
+    const groupName = contextMenuTargetGroup.name;
+    const groupId = contextMenuTargetGroup.id;
+    
+    if (!confirm(`確定要刪除群組「${groupName}」嗎？\n\n刪除後，該群組的所有資料將永久移除。`)) {
+      hideGroupContextMenu();
+      return;
+    }
+    
+    // 刪除群組資料
+    // 1. 從使用者的群組列表中移除
+    const userGroupIds = getUserGroupIds();
+    const updatedGroupIds = userGroupIds.filter(id => id !== groupId);
+    saveUserGroupIds(updatedGroupIds);
+    
+    // 2. 刪除群組本身
+    localStorage.removeItem(`group_${groupId}`);
+    
+    // 3. 刪除群組相關資料
+    localStorage.removeItem(`records_group_${groupId}`);
+    localStorage.removeItem(`members_group_${groupId}`);
+    
+    // 4. 如果是當前群組，清空當前群組
+    if (currentGroup && currentGroup.id === groupId) {
+      currentGroup = null;
+      showPage('main');
+    }
+    
+    // 5. 重新渲染側邊欄
+    renderGroupsInSidebar();
+    hideGroupContextMenu();
+    
+    alert(`群組「${groupName}」已刪除！`);
   });
 }
 
@@ -833,8 +985,90 @@ function renderChart() {
 
       filterFn = (r) => r.date && r.date.startsWith(yearStr);
       chartTitle = `年收支圓餅圖 (${selectedYear})`;
+    } else if (currentChartType === "category") {
+      chartTitle = "類別圓餅圖";
     }
 
+    // Category chart logic
+    if (currentChartType === "category") {
+      const filteredRecords = filterFn ? records.filter(filterFn) : records;
+      const categoryData = {};
+      
+      filteredRecords.forEach(r => {
+        const key = `${r.type}-${r.category}`;
+        if (!categoryData[key]) {
+          categoryData[key] = { type: r.type, category: r.category, amount: 0 };
+        }
+        categoryData[key].amount += r.amount;
+      });
+      
+      const labels = [];
+      const data = [];
+      const colors = [];
+      
+      // Generate colors for categories
+      const greenShades = ['#2ecc71', '#27ae60', '#16a085', '#1abc9c', '#00b894', '#00cec9'];
+      const redShades = ['#e74c3c', '#c0392b', '#e17055', '#d63031', '#ff7675', '#fd79a8'];
+      
+      let greenIndex = 0;
+      let redIndex = 0;
+      
+      Object.values(categoryData).forEach(item => {
+        labels.push(`${item.category}(${item.type})`);
+        data.push(item.amount);
+        if (item.type === '收入') {
+          colors.push(greenShades[greenIndex % greenShades.length]);
+          greenIndex++;
+        } else {
+          colors.push(redShades[redIndex % redShades.length]);
+          redIndex++;
+        }
+      });
+      
+      const hasData = data.length > 0 && data.some(d => d > 0);
+      
+      if (pieChart) {
+        pieChart.data.labels = hasData ? labels : ["尚無資料"];
+        pieChart.data.datasets[0].data = hasData ? data : [1];
+        pieChart.data.datasets[0].backgroundColor = hasData ? colors : ["#eee"];
+        pieChart.options.plugins.title.text = chartTitle;
+        pieChart.update();
+        return;
+      }
+
+      pieChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: hasData ? labels : ["尚無資料"],
+          datasets: [{
+            data: hasData ? data : [1],
+            backgroundColor: hasData ? colors : ["#eee"],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: chartTitle,
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 10 }
+            },
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
+
+    // Original total/income/expense chart logic
     const { income, expense } = computeTotals(filterFn);
     const hasData = (income + expense) > 0;
 
@@ -1882,13 +2116,180 @@ function renderChartGroups() {
   
   try {
     let dataToChart = recordsGroups;
+    let chartTitle = "總收支圓餅圖";
     
     if (chartTypeGroups === "month" && selectedMonthGroups) {
       dataToChart = recordsGroups.filter(r => r.date.startsWith(selectedMonthGroups));
+      const [year, month] = selectedMonthGroups.split('-');
+      chartTitle = `月收支圓餅圖 (${year}年${parseInt(month)}月)`;
     } else if (chartTypeGroups === "year" && selectedYearGroups) {
       dataToChart = recordsGroups.filter(r => r.date.startsWith(selectedYearGroups));
+      chartTitle = `年收支圓餅圖 (${selectedYearGroups})`;
+    } else if (chartTypeGroups === "category") {
+      chartTitle = "類別圓餅圖";
+    } else if (chartTypeGroups === "member") {
+      chartTitle = "成員收支圓餅圖";
     }
     
+    // Category chart logic
+    if (chartTypeGroups === "category") {
+      const categoryData = {};
+      
+      dataToChart.forEach(r => {
+        const key = `${r.type}-${r.category}`;
+        if (!categoryData[key]) {
+          categoryData[key] = { type: r.type, category: r.category, amount: 0 };
+        }
+        categoryData[key].amount += r.amount;
+      });
+      
+      const labels = [];
+      const data = [];
+      const colors = [];
+      
+      // Generate colors for categories
+      const greenShades = ['#2ecc71', '#27ae60', '#16a085', '#1abc9c', '#00b894', '#00cec9'];
+      const redShades = ['#e74c3c', '#c0392b', '#e17055', '#d63031', '#ff7675', '#fd79a8'];
+      
+      let greenIndex = 0;
+      let redIndex = 0;
+      
+      Object.values(categoryData).forEach(item => {
+        labels.push(`${item.category}(${item.type})`);
+        data.push(item.amount);
+        if (item.type === '收入') {
+          colors.push(greenShades[greenIndex % greenShades.length]);
+          greenIndex++;
+        } else {
+          colors.push(redShades[redIndex % redShades.length]);
+          redIndex++;
+        }
+      });
+      
+      const hasData = data.length > 0 && data.some(d => d > 0);
+      
+      if (pieChartGroups) {
+        pieChartGroups.destroy();
+      }
+      
+      const ctx = pieCanvasGroups.getContext("2d");
+      pieChartGroups = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: hasData ? labels : ["尚無資料"],
+          datasets: [{
+            data: hasData ? data : [1],
+            backgroundColor: hasData ? colors : ["#eee"],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom" },
+            title: {
+              display: true,
+              text: chartTitle,
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 10 }
+            },
+            tooltip: {
+              callbacks: {
+                label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
+    
+    // Member chart logic
+    if (chartTypeGroups === "member") {
+      const memberData = {};
+      
+      // Get unique members and assign consistent colors
+      const allMembers = [...new Set(dataToChart.map(r => r.member).filter(m => m))];
+      const memberColors = {};
+      const baseColors = [
+        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', 
+        '#1abc9c', '#e67e22', '#34495e', '#16a085', '#d35400'
+      ];
+      
+      allMembers.forEach((member, index) => {
+        memberColors[member] = baseColors[index % baseColors.length];
+      });
+      
+      dataToChart.forEach(r => {
+        if (!r.member) return;
+        
+        const incomeKey = `${r.member}-收入`;
+        const expenseKey = `${r.member}-支出`;
+        
+        if (r.type === '收入') {
+          if (!memberData[incomeKey]) {
+            memberData[incomeKey] = { member: r.member, type: '收入', amount: 0 };
+          }
+          memberData[incomeKey].amount += r.amount;
+        } else if (r.type === '支出') {
+          if (!memberData[expenseKey]) {
+            memberData[expenseKey] = { member: r.member, type: '支出', amount: 0 };
+          }
+          memberData[expenseKey].amount += r.amount;
+        }
+      });
+      
+      const labels = [];
+      const data = [];
+      const colors = [];
+      
+      Object.values(memberData).forEach(item => {
+        labels.push(`${item.member}(${item.type})`);
+        data.push(item.amount);
+        colors.push(memberColors[item.member]);
+      });
+      
+      const hasData = data.length > 0 && data.some(d => d > 0);
+      
+      if (pieChartGroups) {
+        pieChartGroups.destroy();
+      }
+      
+      const ctx = pieCanvasGroups.getContext("2d");
+      pieChartGroups = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: hasData ? labels : ["尚無資料"],
+          datasets: [{
+            data: hasData ? data : [1],
+            backgroundColor: hasData ? colors : ["#eee"],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom" },
+            title: {
+              display: true,
+              text: chartTitle,
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 10 }
+            },
+            tooltip: {
+              callbacks: {
+                label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
+    
+    // Original total income/expense chart logic
     // Calculate income and expense totals
     let income = 0;
     let expense = 0;
@@ -1926,6 +2327,12 @@ function renderChartGroups() {
         maintainAspectRatio: false,
         plugins: {
           legend: { position: "bottom" },
+          title: {
+            display: true,
+            text: chartTitle,
+            font: { size: 16, weight: 'bold' },
+            padding: { bottom: 10 }
+          },
           tooltip: {
             callbacks: {
               label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
