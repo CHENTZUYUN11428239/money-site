@@ -393,7 +393,7 @@ if (editGroupNameForm) {
     const newName = nameInput.value.trim();
     const groupId = parseInt(nameInput.getAttribute('data-group-id'), 10);
     
-    if (!groupId || isNaN(groupId)) {
+    if (isNaN(groupId) || groupId <= 0) {
       console.log('No group ID found'); // Debug log
       alert('無法找到群組資料！');
       return;
