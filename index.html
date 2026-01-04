@@ -31,6 +31,7 @@
           <!-- Group names will be dynamically added here -->
         </div>
       </div>
+      <a href="#" class="sidebar-link" id="add-member-link" style="display: none;">➕ 新增組員</a>
     </nav>
   </div>
 
@@ -278,7 +279,7 @@
       <form id="tx-form-groups">
         <div class="row">
           <select name="member" id="member-select-groups">
-            <option value="">無</option>
+            <option value="">我</option>
             <option value="其他">其他</option>
           </select>
 
@@ -406,6 +407,24 @@
       <span class="close" id="close-manage-members">&times;</span>
       <h2>管理成員</h2>
       <div id="members-list" class="members-list"></div>
+    </div>
+  </div>
+
+  <!-- 新增組員 Modal -->
+  <div id="add-member-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" id="add-member-modal-close">&times;</span>
+      <h2>新增組員</h2>
+      <form id="add-member-form">
+        <div class="form-group">
+          <label for="member-name-input">組員名稱</label>
+          <input type="text" id="member-name-input" placeholder="輸入組員名稱" required />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn primary">新增組員</button>
+          <button type="button" class="btn" id="add-member-modal-cancel">取消</button>
+        </div>
+      </form>
     </div>
   </div>
 
