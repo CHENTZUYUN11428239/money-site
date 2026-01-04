@@ -32,13 +32,6 @@
         </div>
       </div>
     </nav>
-    <!-- 組員列表顯示區域 -->
-    <div id="members-display" class="sidebar-members" style="display: none;">
-      <h3 style="padding: 12px 20px; margin: 0; font-size: 14px; color: #666; border-top: 1px solid #e6e8ee;">組員列表</h3>
-      <div id="members-display-list" style="padding: 0 20px 10px;">
-        <!-- Members will be displayed here -->
-      </div>
-    </div>
   </div>
 
   <!-- 側邊欄遮罩 -->
@@ -78,6 +71,17 @@
 
   <!-- 新增群組按鈕 (固定在右側) -->
   <button id="add-group-btn" class="add-group-btn-sidebar" type="button" style="display: none;">新增群組</button>
+  
+  <!-- 新增組員按鈕 (固定在右側，新增群組下方) -->
+  <button id="add-member-btn-fixed" class="add-member-btn-fixed" type="button" style="display: none;">新增組員</button>
+  
+  <!-- 組員列表顯示區域 (固定在左側) -->
+  <div id="members-display-fixed" class="members-display-fixed" style="display: none;">
+    <h3>組員列表</h3>
+    <div id="members-list-fixed">
+      <!-- Members will be displayed here -->
+    </div>
+  </div>
 
   <!-- 主頁面 -->
   <div id="main-page" class="page-view">

@@ -9,7 +9,8 @@ function showPage(pageName) {
   const mainPage = document.getElementById('main-page');
   const groupsPage = document.getElementById('groups-page');
   const addGroupBtn = document.getElementById('add-group-btn');
-  const membersDisplay = document.getElementById('members-display');
+  const addMemberBtnFixed = document.getElementById('add-member-btn-fixed');
+  const membersDisplayFixed = document.getElementById('members-display-fixed');
   
   if (pageName === 'main') {
     mainPage.style.display = 'block';
@@ -19,9 +20,13 @@ function showPage(pageName) {
     if (addGroupBtn) {
       addGroupBtn.style.display = 'none';
     }
+    // 隱藏新增組員按鈕（個人頁面不顯示）
+    if (addMemberBtnFixed) {
+      addMemberBtnFixed.style.display = 'none';
+    }
     // 隱藏組員列表（個人頁面不顯示）
-    if (membersDisplay) {
-      membersDisplay.style.display = 'none';
+    if (membersDisplayFixed) {
+      membersDisplayFixed.style.display = 'none';
     }
   } else if (pageName === 'groups') {
     mainPage.style.display = 'none';
@@ -31,14 +36,18 @@ function showPage(pageName) {
     if (addGroupBtn && currentUser) {
       addGroupBtn.style.display = 'inline-block';
     }
-    // 顯示組員列表（群組頁面才顯示）
-    if (membersDisplay && currentUser && currentGroup) {
-      membersDisplay.style.display = 'block';
-      renderMembersDisplay();
+    // 顯示新增組員按鈕（群組頁面且有選擇群組才顯示）
+    if (addMemberBtnFixed && currentUser && currentGroup) {
+      addMemberBtnFixed.style.display = 'inline-block';
+    }
+    // 顯示組員列表（群組頁面且有選擇群組才顯示）
+    if (membersDisplayFixed && currentUser && currentGroup) {
+      membersDisplayFixed.style.display = 'block';
+      renderMembersDisplayFixed();
     }
     // 更新群組標題和說明
     updateGroupHeader();
-    // 重新渲染側邊欄以顯示新增組員按鈕
+    // 重新渲染側邊欄
     renderGroupsInSidebar();
   }
 }
@@ -101,6 +110,21 @@ document.getElementById("home-link").addEventListener("click", (e) => {
   window.scrollTo({ top: 0, behavior: "smooth" });
   closeSidebar();
 });
+
+// 新增組員按鈕點擊事件（固定在右側）
+const addMemberBtnFixed = document.getElementById("add-member-btn-fixed");
+if (addMemberBtnFixed) {
+  addMemberBtnFixed.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentUser && currentGroup) {
+      openAddMemberModal();
+    } else if (!currentUser) {
+      alert("請先登入");
+    } else {
+      alert("請先選擇一個群組");
+    }
+  });
+}
 
 // 群組標題點擊事件（展開/收起群組列表）
 const groupsHeader = document.getElementById("groups-header");
@@ -196,22 +220,6 @@ function renderGroupsInSidebar() {
   });
   groupsList.appendChild(addGroupLink);
   
-  // Add "新增組員" link (only show when user is logged in and on groups page)
-  if (currentUser && currentPage === 'groups' && currentGroup) {
-    const addMemberLink = document.createElement("a");
-    addMemberLink.className = "sidebar-group-item add-group-link";
-    addMemberLink.href = "#";
-    addMemberLink.textContent = "+ 新增組員";
-    addMemberLink.style.fontWeight = "bold";
-    addMemberLink.style.color = "#27ae60";
-    addMemberLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      openAddMemberModal();
-      closeSidebar();
-    });
-    groupsList.appendChild(addMemberLink);
-  }
-  
   if (userGroups.length === 0) {
     const emptyMsg = document.createElement("div");
     emptyMsg.style.padding = "12px 20px 12px 40px";
@@ -236,8 +244,15 @@ function renderGroupsInSidebar() {
       renderRecordsGroups(); // 重新渲染紀錄
       updateSummaryGroups(); // 更新統計
       renderChartGroups(); // 更新圓餅圖
-      renderGroupsInSidebar(); // 重新渲染側邊欄以顯示新增組員按鈕
-      renderMembersDisplay(); // 顯示組員列表
+      renderGroupsInSidebar(); // 重新渲染側邊欄
+      
+      // 顯示固定位置的按鈕和列表
+      const addMemberBtnFixed = document.getElementById('add-member-btn-fixed');
+      if (addMemberBtnFixed) {
+        addMemberBtnFixed.style.display = 'inline-block';
+      }
+      renderMembersDisplayFixed(); // 顯示固定位置的組員列表
+      
       closeSidebar();
     });
     groupsList.appendChild(groupItem);
@@ -1385,6 +1400,75 @@ function renderMembersDisplay() {
   });
 }
 
+// 渲染固定位置的組員列表（左側）
+function renderMembersDisplayFixed() {
+  const membersDisplayFixed = document.getElementById('members-display-fixed');
+  const membersListFixed = document.getElementById('members-list-fixed');
+  
+  if (!membersDisplayFixed || !membersListFixed) return;
+  
+  const members = loadMembers();
+  
+  if (members.length === 0) {
+    membersDisplayFixed.style.display = 'none';
+    return;
+  }
+  
+  membersDisplayFixed.style.display = 'block';
+  membersListFixed.innerHTML = '';
+  
+  members.forEach(member => {
+    const memberItem = document.createElement('div');
+    memberItem.className = 'member-item-fixed';
+    memberItem.dataset.member = member;
+    
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'member-name';
+    nameSpan.textContent = member;
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'member-delete-btn';
+    deleteBtn.textContent = '刪除';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteMemberFixed(member);
+    });
+    
+    memberItem.appendChild(nameSpan);
+    memberItem.appendChild(deleteBtn);
+    
+    // 點擊顯示/隱藏刪除按鈕
+    memberItem.addEventListener('click', () => {
+      // 先移除其他項目的 show-delete 類
+      document.querySelectorAll('.member-item-fixed').forEach(item => {
+        if (item !== memberItem) {
+          item.classList.remove('show-delete');
+        }
+      });
+      // 切換當前項目的狀態
+      memberItem.classList.toggle('show-delete');
+    });
+    
+    membersListFixed.appendChild(memberItem);
+  });
+}
+
+// 刪除固定列表中的成員
+function deleteMemberFixed(memberName) {
+  if (!confirm(`確定要刪除組員「${memberName}」嗎？`)) return;
+  
+  let members = loadMembers();
+  members = members.filter(m => m !== memberName);
+  saveMembers(members);
+  
+  updateMemberSelect();
+  renderMembersList();
+  renderMembersDisplayFixed(); // 更新固定列表顯示
+  updateFilterMemberOptionsGroups();
+  
+  alert(`組員「${memberName}」已成功刪除！`);
+}
+
 // 新增組員 Modal 相關函數
 const addMemberModal = document.getElementById("add-member-modal");
 const addMemberModalClose = document.getElementById("add-member-modal-close");
@@ -1467,6 +1551,9 @@ if (addMemberForm) {
     
     // 更新側邊欄組員顯示
     renderMembersDisplay();
+    
+    // 更新固定位置的組員列表
+    renderMembersDisplayFixed();
     
     // 關閉 Modal
     closeAddMemberModal();
