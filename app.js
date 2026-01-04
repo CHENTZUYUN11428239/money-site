@@ -197,6 +197,63 @@ function addUserToGroup(groupId) {
   }
 }
 
+// Helper: Add any user to a group (not just current user)
+function addUserToGroupById(username, groupId) {
+  if (!username || !groupId) return;
+  
+  // Add group to user's list
+  const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`)) || [];
+  if (!userGroupIds.includes(groupId)) {
+    userGroupIds.push(groupId);
+    localStorage.setItem(`user_groups_${username}`, JSON.stringify(userGroupIds));
+  }
+  
+  // Add user to group's list
+  const group = getGroup(groupId);
+  if (group) {
+    if (!group.users) group.users = [];
+    if (!group.users.includes(username)) {
+      group.users.push(username);
+      saveGroup(group);
+    }
+  }
+}
+
+// Helper: Remove any user from a group
+function removeUserFromGroup(username, groupId) {
+  if (!username || !groupId) return;
+  
+  // Remove group from user's list
+  const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`)) || [];
+  const updatedGroupIds = userGroupIds.filter(id => id !== groupId);
+  localStorage.setItem(`user_groups_${username}`, JSON.stringify(updatedGroupIds));
+  
+  // Remove user from group's list
+  const group = getGroup(groupId);
+  if (group && group.users) {
+    group.users = group.users.filter(u => u !== username);
+    saveGroup(group);
+  }
+}
+
+// Helper: Check if user is authenticated
+function requireAuthentication() {
+  if (!currentUser) {
+    alert("請先登入才能執行此操作！");
+    return false;
+  }
+  return true;
+}
+
+// Helper: Check if current user is a member of the specified group
+function requireGroupMembership(group) {
+  if (!group || !group.users || !group.users.includes(currentUser)) {
+    alert("您不是此群組的成員，無法執行此操作！");
+    return false;
+  }
+  return true;
+}
+
 // Render groups in sidebar
 function renderGroupsInSidebar() {
   const groupsList = document.getElementById("groups-list");
@@ -240,6 +297,13 @@ function renderGroupsInSidebar() {
     // 左鍵點擊：選擇群組
     groupItem.addEventListener("click", (e) => {
       e.preventDefault();
+      
+      // 檢查當前使用者是否為群組成員
+      if (currentUser && group.users && !group.users.includes(currentUser)) {
+        alert("您不是此群組的成員，無法查看該群組的紀錄！");
+        return;
+      }
+      
       currentGroup = group; // 設置當前群組
       loadRecordsGroups(); // 載入該群組的紀錄
       showPage('groups');
@@ -445,6 +509,12 @@ if (contextEditGroupName) {
   contextEditGroupName.addEventListener('click', () => {
     if (!contextMenuTargetGroup) return;
     
+    // 檢查當前使用者是否為群組成員
+    if (!requireGroupMembership(contextMenuTargetGroup)) {
+      hideGroupContextMenu();
+      return;
+    }
+    
     // 保存群組引用以供 form submit 使用
     // 因為 hideGroupContextMenu() 會將 contextMenuTargetGroup 設為 null
     const groupToEdit = contextMenuTargetGroup;
@@ -465,6 +535,12 @@ if (contextEditGroup) {
   contextEditGroup.addEventListener('click', () => {
     if (!contextMenuTargetGroup) return;
     
+    // 檢查當前使用者是否為群組成員
+    if (!requireGroupMembership(contextMenuTargetGroup)) {
+      hideGroupContextMenu();
+      return;
+    }
+    
     // 填入群組資料
     document.getElementById('edit-group-name').value = contextMenuTargetGroup.name;
     document.getElementById('edit-group-desc-input').value = contextMenuTargetGroup.description || '';
@@ -478,6 +554,12 @@ if (contextEditGroup) {
 if (contextDeleteGroup) {
   contextDeleteGroup.addEventListener('click', () => {
     if (!contextMenuTargetGroup) return;
+    
+    // 檢查當前使用者是否為群組成員
+    if (!requireGroupMembership(contextMenuTargetGroup)) {
+      hideGroupContextMenu();
+      return;
+    }
     
     const groupName = contextMenuTargetGroup.name;
     const groupId = contextMenuTargetGroup.id;
@@ -1750,9 +1832,13 @@ function renderMembersDisplayFixed() {
   
   if (!membersDisplayFixed || !membersListFixed) return;
   
-  const members = loadMembers();
+  // 顯示群組中的實際成員（有帳號的使用者）
+  let groupMembers = [];
+  if (currentGroup && currentGroup.users) {
+    groupMembers = currentGroup.users;
+  }
   
-  if (members.length === 0) {
+  if (groupMembers.length === 0) {
     membersDisplayFixed.style.display = 'none';
     return;
   }
@@ -1760,7 +1846,7 @@ function renderMembersDisplayFixed() {
   membersDisplayFixed.style.display = 'block';
   membersListFixed.innerHTML = '';
   
-  members.forEach(member => {
+  groupMembers.forEach(member => {
     const memberItem = document.createElement('div');
     memberItem.className = 'member-item-fixed';
     memberItem.dataset.member = member;
@@ -1769,9 +1855,15 @@ function renderMembersDisplayFixed() {
     nameSpan.className = 'member-name';
     nameSpan.textContent = member;
     
+    // 標記當前使用者
+    if (member === currentUser) {
+      nameSpan.textContent += ' (我)';
+      nameSpan.classList.add('current-user');
+    }
+    
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'member-delete-btn';
-    deleteBtn.textContent = '刪除';
+    deleteBtn.textContent = '移除';
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       deleteMemberFixed(member);
@@ -1798,11 +1890,21 @@ function renderMembersDisplayFixed() {
 
 // 刪除固定列表中的成員
 function deleteMemberFixed(memberName) {
+  if (!requireAuthentication()) return;
+  
+  // 檢查當前使用者是否為群組成員
+  if (!currentGroup || !requireGroupMembership(currentGroup)) return;
+  
   if (!confirm(`確定要刪除組員「${memberName}」嗎？`)) return;
   
   let members = loadMembers();
   members = members.filter(m => m !== memberName);
   saveMembers(members);
+  
+  // 使用 helper 函數移除成員
+  if (currentGroup) {
+    removeUserFromGroup(memberName, currentGroup.id);
+  }
   
   updateMemberSelect();
   renderMembersList();
@@ -1877,31 +1979,50 @@ if (addMemberForm) {
       return;
     }
     
-    // 檢查成員是否已存在 (不區分大小寫)
-    let members = loadMembers();
-    if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
-      alert("該成員已存在！");
+    // 檢查成員是否為已註冊的使用者（不區分大小寫）
+    const allUsers = getAllUsers();
+    const normalizedMemberName = memberName.toLowerCase();
+    const existingUser = Object.keys(allUsers).find(u => u.toLowerCase() === normalizedMemberName);
+    
+    if (!existingUser) {
+      alert("該使用者不存在！請確認使用者已註冊。");
       return;
     }
     
-    // 新增成員
-    members.push(memberName);
-    saveMembers(members);
+    // 使用實際的使用者名稱（保留原始大小寫）
+    const actualMemberName = existingUser;
     
-    // 更新下拉選單
+    // 檢查成員是否已經在群組中
+    if (currentGroup && currentGroup.users && currentGroup.users.includes(actualMemberName)) {
+      alert("該成員已在群組中！");
+      return;
+    }
+    
+    // 將使用者加入群組
+    if (currentGroup) {
+      addUserToGroupById(actualMemberName, currentGroup.id);
+    }
+    
+    // 檢查成員是否已存在於顯示列表中
+    let members = loadMembers();
+    const memberExists = members.some(member => member.toLowerCase() === actualMemberName.toLowerCase());
+    
+    if (!memberExists) {
+      // 新增成員到顯示列表
+      members.push(actualMemberName);
+      saveMembers(members);
+    }
+    
+    // 更新 UI
     updateMemberSelect();
     updateFilterMemberOptionsGroups();
-    
-    // 更新側邊欄組員顯示
     renderMembersDisplay();
-    
-    // 更新固定位置的組員列表
     renderMembersDisplayFixed();
     
     // 關閉 Modal
     closeAddMemberModal();
     
-    alert(`成員「${memberName}」已成功新增！`);
+    alert(`成員「${actualMemberName}」已成功加入群組！`);
   });
 }
 
@@ -2063,11 +2184,21 @@ function renderMembersList() {
 
 // 刪除成員
 function deleteMember(memberName) {
+  if (!requireAuthentication()) return;
+  
+  // 檢查當前使用者是否為群組成員
+  if (!currentGroup || !requireGroupMembership(currentGroup)) return;
+  
   if (!confirm(`確定要刪除成員「${memberName}」嗎？`)) return;
   
   let members = loadMembers();
   members = members.filter(m => m !== memberName);
   saveMembers(members);
+  
+  // 使用 helper 函數移除成員
+  if (currentGroup) {
+    removeUserFromGroup(memberName, currentGroup.id);
+  }
   
   updateMemberSelect();
   renderMembersList();
@@ -2082,11 +2213,15 @@ updateMemberSelect();
 formGroups.addEventListener("submit", (e) => {
   e.preventDefault();
   
-  const currentUser = localStorage.getItem("currentUser");
-  if (!currentUser) {
-    alert("請先登入才能新增紀錄！");
+  if (!requireAuthentication()) return;
+  
+  // 檢查當前使用者是否為群組成員
+  if (!currentGroup) {
+    alert("請先選擇一個群組！");
     return;
   }
+  
+  if (!requireGroupMembership(currentGroup)) return;
   
   const fd = new FormData(formGroups);
   let category = fd.get("category");
@@ -2141,6 +2276,11 @@ formGroups.addEventListener("submit", (e) => {
 
 // 刪除紀錄（群組頁面）
 function deleteRecordGroups(id) {
+  if (!requireAuthentication()) return;
+  
+  // 檢查當前使用者是否為群組成員
+  if (!currentGroup || !requireGroupMembership(currentGroup)) return;
+  
   if (!confirm("確定要刪除此筆紀錄嗎？")) return;
   recordsGroups = recordsGroups.filter(r => r.id !== id);
   saveRecordsGroups();
@@ -2207,6 +2347,11 @@ function updateSummaryGroups() {
 
 // 清空所有紀錄（群組頁面）
 clearAllBtnGroups.addEventListener("click", () => {
+  if (!requireAuthentication()) return;
+  
+  // 檢查當前使用者是否為群組成員
+  if (!currentGroup || !requireGroupMembership(currentGroup)) return;
+  
   if (!confirm("確定要清空所有群組紀錄嗎？此操作無法復原！")) return;
   recordsGroups = [];
   saveRecordsGroups();
