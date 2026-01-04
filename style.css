@@ -655,6 +655,37 @@ header {
   margin-right: 50px;
 }
 
+/* ===== 右鍵選單 ===== */
+.context-menu {
+  position: fixed;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  z-index: 9999;
+  min-width: 180px;
+}
+
+.context-menu-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background 0.2s ease;
+}
+
+.context-menu-item:hover {
+  background: #f5f7fa;
+}
+
+.context-menu-item:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.context-menu-item:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
 /* ===== Modal 樣式 ===== */
 .modal {
   display: none;
