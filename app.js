@@ -985,8 +985,90 @@ function renderChart() {
 
       filterFn = (r) => r.date && r.date.startsWith(yearStr);
       chartTitle = `年收支圓餅圖 (${selectedYear})`;
+    } else if (currentChartType === "category") {
+      chartTitle = "類別圓餅圖";
     }
 
+    // Category chart logic
+    if (currentChartType === "category") {
+      const filteredRecords = filterFn ? records.filter(filterFn) : records;
+      const categoryData = {};
+      
+      filteredRecords.forEach(r => {
+        const key = `${r.type}-${r.category}`;
+        if (!categoryData[key]) {
+          categoryData[key] = { type: r.type, category: r.category, amount: 0 };
+        }
+        categoryData[key].amount += r.amount;
+      });
+      
+      const labels = [];
+      const data = [];
+      const colors = [];
+      
+      // Generate colors for categories
+      const greenShades = ['#2ecc71', '#27ae60', '#16a085', '#1abc9c', '#00b894', '#00cec9'];
+      const redShades = ['#e74c3c', '#c0392b', '#e17055', '#d63031', '#ff7675', '#fd79a8'];
+      
+      let greenIndex = 0;
+      let redIndex = 0;
+      
+      Object.values(categoryData).forEach(item => {
+        labels.push(`${item.category}(${item.type})`);
+        data.push(item.amount);
+        if (item.type === '收入') {
+          colors.push(greenShades[greenIndex % greenShades.length]);
+          greenIndex++;
+        } else {
+          colors.push(redShades[redIndex % redShades.length]);
+          redIndex++;
+        }
+      });
+      
+      const hasData = data.length > 0 && data.some(d => d > 0);
+      
+      if (pieChart) {
+        pieChart.data.labels = hasData ? labels : ["尚無資料"];
+        pieChart.data.datasets[0].data = hasData ? data : [1];
+        pieChart.data.datasets[0].backgroundColor = hasData ? colors : ["#eee"];
+        pieChart.options.plugins.title.text = chartTitle;
+        pieChart.update();
+        return;
+      }
+
+      pieChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: hasData ? labels : ["尚無資料"],
+          datasets: [{
+            data: hasData ? data : [1],
+            backgroundColor: hasData ? colors : ["#eee"],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: chartTitle,
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 10 }
+            },
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
+
+    // Original total/income/expense chart logic
     const { income, expense } = computeTotals(filterFn);
     const hasData = (income + expense) > 0;
 
@@ -2034,13 +2116,180 @@ function renderChartGroups() {
   
   try {
     let dataToChart = recordsGroups;
+    let chartTitle = "總收支圓餅圖";
     
     if (chartTypeGroups === "month" && selectedMonthGroups) {
       dataToChart = recordsGroups.filter(r => r.date.startsWith(selectedMonthGroups));
+      const [year, month] = selectedMonthGroups.split('-');
+      chartTitle = `月收支圓餅圖 (${year}年${parseInt(month)}月)`;
     } else if (chartTypeGroups === "year" && selectedYearGroups) {
       dataToChart = recordsGroups.filter(r => r.date.startsWith(selectedYearGroups));
+      chartTitle = `年收支圓餅圖 (${selectedYearGroups})`;
+    } else if (chartTypeGroups === "category") {
+      chartTitle = "類別圓餅圖";
+    } else if (chartTypeGroups === "member") {
+      chartTitle = "成員收支圓餅圖";
     }
     
+    // Category chart logic
+    if (chartTypeGroups === "category") {
+      const categoryData = {};
+      
+      dataToChart.forEach(r => {
+        const key = `${r.type}-${r.category}`;
+        if (!categoryData[key]) {
+          categoryData[key] = { type: r.type, category: r.category, amount: 0 };
+        }
+        categoryData[key].amount += r.amount;
+      });
+      
+      const labels = [];
+      const data = [];
+      const colors = [];
+      
+      // Generate colors for categories
+      const greenShades = ['#2ecc71', '#27ae60', '#16a085', '#1abc9c', '#00b894', '#00cec9'];
+      const redShades = ['#e74c3c', '#c0392b', '#e17055', '#d63031', '#ff7675', '#fd79a8'];
+      
+      let greenIndex = 0;
+      let redIndex = 0;
+      
+      Object.values(categoryData).forEach(item => {
+        labels.push(`${item.category}(${item.type})`);
+        data.push(item.amount);
+        if (item.type === '收入') {
+          colors.push(greenShades[greenIndex % greenShades.length]);
+          greenIndex++;
+        } else {
+          colors.push(redShades[redIndex % redShades.length]);
+          redIndex++;
+        }
+      });
+      
+      const hasData = data.length > 0 && data.some(d => d > 0);
+      
+      if (pieChartGroups) {
+        pieChartGroups.destroy();
+      }
+      
+      const ctx = pieCanvasGroups.getContext("2d");
+      pieChartGroups = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: hasData ? labels : ["尚無資料"],
+          datasets: [{
+            data: hasData ? data : [1],
+            backgroundColor: hasData ? colors : ["#eee"],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom" },
+            title: {
+              display: true,
+              text: chartTitle,
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 10 }
+            },
+            tooltip: {
+              callbacks: {
+                label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
+    
+    // Member chart logic
+    if (chartTypeGroups === "member") {
+      const memberData = {};
+      
+      // Get unique members and assign consistent colors
+      const allMembers = [...new Set(dataToChart.map(r => r.member).filter(m => m))];
+      const memberColors = {};
+      const baseColors = [
+        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', 
+        '#1abc9c', '#e67e22', '#34495e', '#16a085', '#d35400'
+      ];
+      
+      allMembers.forEach((member, index) => {
+        memberColors[member] = baseColors[index % baseColors.length];
+      });
+      
+      dataToChart.forEach(r => {
+        if (!r.member) return;
+        
+        const incomeKey = `${r.member}-收入`;
+        const expenseKey = `${r.member}-支出`;
+        
+        if (r.type === '收入') {
+          if (!memberData[incomeKey]) {
+            memberData[incomeKey] = { member: r.member, type: '收入', amount: 0 };
+          }
+          memberData[incomeKey].amount += r.amount;
+        } else if (r.type === '支出') {
+          if (!memberData[expenseKey]) {
+            memberData[expenseKey] = { member: r.member, type: '支出', amount: 0 };
+          }
+          memberData[expenseKey].amount += r.amount;
+        }
+      });
+      
+      const labels = [];
+      const data = [];
+      const colors = [];
+      
+      Object.values(memberData).forEach(item => {
+        labels.push(`${item.member}(${item.type})`);
+        data.push(item.amount);
+        colors.push(memberColors[item.member]);
+      });
+      
+      const hasData = data.length > 0 && data.some(d => d > 0);
+      
+      if (pieChartGroups) {
+        pieChartGroups.destroy();
+      }
+      
+      const ctx = pieCanvasGroups.getContext("2d");
+      pieChartGroups = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: hasData ? labels : ["尚無資料"],
+          datasets: [{
+            data: hasData ? data : [1],
+            backgroundColor: hasData ? colors : ["#eee"],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom" },
+            title: {
+              display: true,
+              text: chartTitle,
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 10 }
+            },
+            tooltip: {
+              callbacks: {
+                label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
+    
+    // Original total income/expense chart logic
     // Calculate income and expense totals
     let income = 0;
     let expense = 0;
@@ -2078,6 +2327,12 @@ function renderChartGroups() {
         maintainAspectRatio: false,
         plugins: {
           legend: { position: "bottom" },
+          title: {
+            display: true,
+            text: chartTitle,
+            font: { size: 16, weight: 'bold' },
+            padding: { bottom: 10 }
+          },
           tooltip: {
             callbacks: {
               label: (c) => `${c.label}: ${Number(c.raw || 0).toLocaleString("zh-TW")}`
