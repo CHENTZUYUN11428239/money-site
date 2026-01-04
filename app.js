@@ -1391,9 +1391,9 @@ if (addMemberForm) {
       return;
     }
     
-    // 檢查成員是否已存在
+    // 檢查成員是否已存在 (不區分大小寫)
     let members = loadMembers();
-    if (members.includes(memberName)) {
+    if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
       alert("該組員已存在！");
       return;
     }
