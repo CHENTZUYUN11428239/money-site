@@ -31,8 +31,14 @@
           <!-- Group names will be dynamically added here -->
         </div>
       </div>
-      <a href="#" class="sidebar-link" id="add-member-link" style="display: none;">➕ 新增組員</a>
     </nav>
+    <!-- 組員列表顯示區域 -->
+    <div id="members-display" class="sidebar-members" style="display: none;">
+      <h3 style="padding: 12px 20px; margin: 0; font-size: 14px; color: #666; border-top: 1px solid #e6e8ee;">組員列表</h3>
+      <div id="members-display-list" style="padding: 0 20px 10px;">
+        <!-- Members will be displayed here -->
+      </div>
+    </div>
   </div>
 
   <!-- 側邊欄遮罩 -->
@@ -279,7 +285,7 @@
       <form id="tx-form-groups">
         <div class="row">
           <select name="member" id="member-select-groups">
-            <option value="">我</option>
+            <option value="">無</option>
             <option value="其他">其他</option>
           </select>
 
@@ -417,21 +423,8 @@
       <h2>新增組員</h2>
       <form id="add-member-form">
         <div class="form-group">
-          <label>組員類型</label>
-          <select id="member-type-select" style="width: 100%; padding: 10px; border: 1px solid #e6e8ee; border-radius: 12px;">
-            <option value="name">成員名稱（僅用於記帳）</option>
-            <option value="user">使用者帳號（共同編輯）</option>
-          </select>
-        </div>
-        <div class="form-group" id="member-name-group">
-          <label for="member-name-input">成員名稱</label>
-          <input type="text" id="member-name-input" placeholder="輸入成員名稱（如：小明、小華）" />
-          <small style="color: #666; font-size: 12px;">此成員名稱僅用於標記誰支付了費用</small>
-        </div>
-        <div class="form-group" id="member-user-group" style="display: none;">
-          <label for="member-user-input">使用者帳號</label>
-          <input type="text" id="member-user-input" placeholder="輸入已註冊的使用者帳號" />
-          <small style="color: #666; font-size: 12px;">該使用者將可以查看和編輯此群組的所有資料</small>
+          <label for="member-name-input">組員名稱</label>
+          <input type="text" id="member-name-input" placeholder="輸入組員名稱" required />
         </div>
         <div class="modal-actions">
           <button type="submit" class="btn primary">新增組員</button>
