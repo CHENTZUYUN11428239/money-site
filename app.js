@@ -362,13 +362,17 @@ const editGroupNameForm = document.getElementById('edit-group-name-form');
 
 if (editGroupNameModalClose) {
   editGroupNameModalClose.addEventListener('click', () => {
-    editGroupNameModal.classList.remove('show');
+    if (editGroupNameModal) {
+      editGroupNameModal.classList.remove('show');
+    }
   });
 }
 
 if (editGroupNameModalCancel) {
   editGroupNameModalCancel.addEventListener('click', () => {
-    editGroupNameModal.classList.remove('show');
+    if (editGroupNameModal) {
+      editGroupNameModal.classList.remove('show');
+    }
   });
 }
 
@@ -383,8 +387,12 @@ if (editGroupNameModal) {
 if (editGroupNameForm) {
   editGroupNameForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log('Form submitted'); // Debug log
     
-    if (!contextMenuTargetGroup) return;
+    if (!contextMenuTargetGroup) {
+      console.log('No target group'); // Debug log
+      return;
+    }
     
     const nameInput = document.getElementById('edit-group-name-input');
     const newName = nameInput.value.trim();
@@ -409,11 +417,15 @@ if (editGroupNameForm) {
     renderGroupsInSidebar();
     
     // 關閉 modal
-    editGroupNameModal.classList.remove('show');
+    if (editGroupNameModal) {
+      editGroupNameModal.classList.remove('show');
+    }
     hideGroupContextMenu();
     
     alert(`群組名稱已從「${oldName}」更新為「${newName}」！`);
   });
+} else {
+  console.log('Edit group name form not found'); // Debug log
 }
 
 // 右鍵選單項目點擊事件
