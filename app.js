@@ -354,9 +354,88 @@ if (editGroupForm) {
   });
 }
 
+// 編輯群組名稱 modal
+const editGroupNameModal = document.getElementById('edit-group-name-modal');
+const editGroupNameModalClose = document.getElementById('edit-group-name-modal-close');
+const editGroupNameModalCancel = document.getElementById('edit-group-name-modal-cancel');
+const editGroupNameForm = document.getElementById('edit-group-name-form');
+
+if (editGroupNameModalClose) {
+  editGroupNameModalClose.addEventListener('click', () => {
+    editGroupNameModal.classList.remove('show');
+  });
+}
+
+if (editGroupNameModalCancel) {
+  editGroupNameModalCancel.addEventListener('click', () => {
+    editGroupNameModal.classList.remove('show');
+  });
+}
+
+if (editGroupNameModal) {
+  editGroupNameModal.addEventListener('click', (e) => {
+    if (e.target === editGroupNameModal) {
+      editGroupNameModal.classList.remove('show');
+    }
+  });
+}
+
+if (editGroupNameForm) {
+  editGroupNameForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    if (!contextMenuTargetGroup) return;
+    
+    const nameInput = document.getElementById('edit-group-name-input');
+    const newName = nameInput.value.trim();
+    
+    if (!newName) {
+      alert('請輸入群組名稱！');
+      return;
+    }
+    
+    // 更新群組名稱
+    const oldName = contextMenuTargetGroup.name;
+    contextMenuTargetGroup.name = newName;
+    saveGroup(contextMenuTargetGroup);
+    
+    // 如果是當前群組，更新顯示
+    if (currentGroup && currentGroup.id === contextMenuTargetGroup.id) {
+      currentGroup.name = newName;
+      updateGroupHeader();
+    }
+    
+    // 重新渲染側邊欄以顯示新名稱
+    renderGroupsInSidebar();
+    
+    // 關閉 modal
+    editGroupNameModal.classList.remove('show');
+    hideGroupContextMenu();
+    
+    alert(`群組名稱已從「${oldName}」更新為「${newName}」！`);
+  });
+}
+
 // 右鍵選單項目點擊事件
+const contextEditGroupName = document.getElementById('context-edit-group-name');
 const contextEditGroup = document.getElementById('context-edit-group');
 const contextDeleteGroup = document.getElementById('context-delete-group');
+
+if (contextEditGroupName) {
+  contextEditGroupName.addEventListener('click', () => {
+    if (!contextMenuTargetGroup) return;
+    
+    // 填入當前群組名稱
+    document.getElementById('edit-group-name-input').value = contextMenuTargetGroup.name;
+    
+    // 顯示 modal
+    const editGroupNameModal = document.getElementById('edit-group-name-modal');
+    if (editGroupNameModal) {
+      editGroupNameModal.classList.add('show');
+    }
+    hideGroupContextMenu();
+  });
+}
 
 if (contextEditGroup) {
   contextEditGroup.addEventListener('click', () => {
@@ -1010,10 +1089,16 @@ function renderChart() {
       const greenShades = ['#2ecc71', '#27ae60', '#16a085', '#1abc9c', '#00b894', '#00cec9'];
       const redShades = ['#e74c3c', '#c0392b', '#e17055', '#d63031', '#ff7675', '#fd79a8'];
       
+      // Sort by type first (收入 first, then 支出) to group same colors together
+      const sortedData = Object.values(categoryData).sort((a, b) => {
+        if (a.type === b.type) return 0;
+        return a.type === '收入' ? -1 : 1;
+      });
+      
       let greenIndex = 0;
       let redIndex = 0;
       
-      Object.values(categoryData).forEach(item => {
+      sortedData.forEach(item => {
         labels.push(`${item.category}(${item.type})`);
         data.push(item.amount);
         if (item.type === '收入') {
@@ -2151,10 +2236,16 @@ function renderChartGroups() {
       const greenShades = ['#2ecc71', '#27ae60', '#16a085', '#1abc9c', '#00b894', '#00cec9'];
       const redShades = ['#e74c3c', '#c0392b', '#e17055', '#d63031', '#ff7675', '#fd79a8'];
       
+      // Sort by type first (收入 first, then 支出) to group same colors together
+      const sortedData = Object.values(categoryData).sort((a, b) => {
+        if (a.type === b.type) return 0;
+        return a.type === '收入' ? -1 : 1;
+      });
+      
       let greenIndex = 0;
       let redIndex = 0;
       
-      Object.values(categoryData).forEach(item => {
+      sortedData.forEach(item => {
         labels.push(`${item.category}(${item.type})`);
         data.push(item.amount);
         if (item.type === '收入') {
@@ -2244,7 +2335,15 @@ function renderChartGroups() {
       const data = [];
       const colors = [];
       
-      Object.values(memberData).forEach(item => {
+      // Sort by member name, then by type (收入 first, then 支出) to group same members together
+      const sortedData = Object.values(memberData).sort((a, b) => {
+        if (a.member === b.member) {
+          return a.type === '收入' ? -1 : 1;
+        }
+        return a.member.localeCompare(b.member, 'zh-TW');
+      });
+      
+      sortedData.forEach(item => {
         labels.push(`${item.member}(${item.type})`);
         data.push(item.amount);
         colors.push(memberColors[item.member]);
