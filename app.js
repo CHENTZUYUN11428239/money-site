@@ -235,6 +235,9 @@ function renderGroupsInSidebar() {
     groupItem.className = "sidebar-group-item";
     groupItem.href = "#";
     groupItem.textContent = group.name;
+    groupItem.dataset.groupId = group.id;
+    
+    // 左鍵點擊：選擇群組
     groupItem.addEventListener("click", (e) => {
       e.preventDefault();
       currentGroup = group; // 設置當前群組
@@ -255,7 +258,156 @@ function renderGroupsInSidebar() {
       
       closeSidebar();
     });
+    
+    // 右鍵點擊：顯示選單
+    groupItem.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showGroupContextMenu(e, group);
+    });
+    
     groupsList.appendChild(groupItem);
+  });
+}
+
+// 顯示群組右鍵選單
+let contextMenuTargetGroup = null;
+
+function showGroupContextMenu(e, group) {
+  const contextMenu = document.getElementById('group-context-menu');
+  if (!contextMenu) return;
+  
+  contextMenuTargetGroup = group;
+  
+  // 設置選單位置
+  contextMenu.style.display = 'block';
+  contextMenu.style.left = e.pageX + 'px';
+  contextMenu.style.top = e.pageY + 'px';
+}
+
+// 隱藏群組右鍵選單
+function hideGroupContextMenu() {
+  const contextMenu = document.getElementById('group-context-menu');
+  if (contextMenu) {
+    contextMenu.style.display = 'none';
+  }
+  contextMenuTargetGroup = null;
+}
+
+// 點擊其他地方隱藏選單
+document.addEventListener('click', (e) => {
+  const contextMenu = document.getElementById('group-context-menu');
+  if (contextMenu && !contextMenu.contains(e.target)) {
+    hideGroupContextMenu();
+  }
+});
+
+// 編輯群組說明
+const editGroupModal = document.getElementById('edit-group-modal');
+const editGroupModalClose = document.getElementById('edit-group-modal-close');
+const editGroupModalCancel = document.getElementById('edit-group-modal-cancel');
+const editGroupForm = document.getElementById('edit-group-form');
+
+if (editGroupModalClose) {
+  editGroupModalClose.addEventListener('click', () => {
+    editGroupModal.classList.remove('show');
+  });
+}
+
+if (editGroupModalCancel) {
+  editGroupModalCancel.addEventListener('click', () => {
+    editGroupModal.classList.remove('show');
+  });
+}
+
+if (editGroupModal) {
+  editGroupModal.addEventListener('click', (e) => {
+    if (e.target === editGroupModal) {
+      editGroupModal.classList.remove('show');
+    }
+  });
+}
+
+if (editGroupForm) {
+  editGroupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    if (!contextMenuTargetGroup) return;
+    
+    const descInput = document.getElementById('edit-group-desc-input');
+    const newDescription = descInput.value.trim();
+    
+    // 更新群組說明
+    contextMenuTargetGroup.description = newDescription;
+    saveGroup(contextMenuTargetGroup);
+    
+    // 如果是當前群組，更新顯示
+    if (currentGroup && currentGroup.id === contextMenuTargetGroup.id) {
+      currentGroup.description = newDescription;
+      updateGroupHeader();
+    }
+    
+    // 關閉 modal
+    editGroupModal.classList.remove('show');
+    hideGroupContextMenu();
+    
+    alert('群組說明已更新！');
+  });
+}
+
+// 右鍵選單項目點擊事件
+const contextEditGroup = document.getElementById('context-edit-group');
+const contextDeleteGroup = document.getElementById('context-delete-group');
+
+if (contextEditGroup) {
+  contextEditGroup.addEventListener('click', () => {
+    if (!contextMenuTargetGroup) return;
+    
+    // 填入群組資料
+    document.getElementById('edit-group-name').value = contextMenuTargetGroup.name;
+    document.getElementById('edit-group-desc-input').value = contextMenuTargetGroup.description || '';
+    
+    // 顯示 modal
+    editGroupModal.classList.add('show');
+    hideGroupContextMenu();
+  });
+}
+
+if (contextDeleteGroup) {
+  contextDeleteGroup.addEventListener('click', () => {
+    if (!contextMenuTargetGroup) return;
+    
+    const groupName = contextMenuTargetGroup.name;
+    const groupId = contextMenuTargetGroup.id;
+    
+    if (!confirm(`確定要刪除群組「${groupName}」嗎？\n\n刪除後，該群組的所有資料將永久移除。`)) {
+      hideGroupContextMenu();
+      return;
+    }
+    
+    // 刪除群組資料
+    // 1. 從使用者的群組列表中移除
+    const userGroupIds = getUserGroupIds();
+    const updatedGroupIds = userGroupIds.filter(id => id !== groupId);
+    saveUserGroupIds(updatedGroupIds);
+    
+    // 2. 刪除群組本身
+    localStorage.removeItem(`group_${groupId}`);
+    
+    // 3. 刪除群組相關資料
+    localStorage.removeItem(`records_group_${groupId}`);
+    localStorage.removeItem(`members_group_${groupId}`);
+    
+    // 4. 如果是當前群組，清空當前群組
+    if (currentGroup && currentGroup.id === groupId) {
+      currentGroup = null;
+      showPage('main');
+    }
+    
+    // 5. 重新渲染側邊欄
+    renderGroupsInSidebar();
+    hideGroupContextMenu();
+    
+    alert(`群組「${groupName}」已刪除！`);
   });
 }
 
