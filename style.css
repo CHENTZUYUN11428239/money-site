@@ -766,6 +766,12 @@ header {
   color: #2e7d32;
 }
 
+/* ===== 成員列表樣式 ===== */
+.member-name.current-user {
+  font-weight: bold;
+  color: #3498db;
+}
+
 /* ===== 成員管理 ===== */
 .members-list {
   max-height: 400px;
