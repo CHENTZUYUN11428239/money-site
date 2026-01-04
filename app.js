@@ -197,6 +197,45 @@ function addUserToGroup(groupId) {
   }
 }
 
+// Helper: Add any user to a group (not just current user)
+function addUserToGroupById(username, groupId) {
+  if (!username || !groupId) return;
+  
+  // Add group to user's list
+  const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`)) || [];
+  if (!userGroupIds.includes(groupId)) {
+    userGroupIds.push(groupId);
+    localStorage.setItem(`user_groups_${username}`, JSON.stringify(userGroupIds));
+  }
+  
+  // Add user to group's list
+  const group = getGroup(groupId);
+  if (group) {
+    if (!group.users) group.users = [];
+    if (!group.users.includes(username)) {
+      group.users.push(username);
+      saveGroup(group);
+    }
+  }
+}
+
+// Helper: Remove any user from a group
+function removeUserFromGroup(username, groupId) {
+  if (!username || !groupId) return;
+  
+  // Remove group from user's list
+  const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`)) || [];
+  const updatedGroupIds = userGroupIds.filter(id => id !== groupId);
+  localStorage.setItem(`user_groups_${username}`, JSON.stringify(updatedGroupIds));
+  
+  // Remove user from group's list
+  const group = getGroup(groupId);
+  if (group && group.users) {
+    group.users = group.users.filter(u => u !== username);
+    saveGroup(group);
+  }
+}
+
 // Render groups in sidebar
 function renderGroupsInSidebar() {
   const groupsList = document.getElementById("groups-list");
@@ -1804,8 +1843,7 @@ function renderMembersDisplayFixed() {
     // 標記當前使用者
     if (member === currentUser) {
       nameSpan.textContent += ' (我)';
-      nameSpan.style.fontWeight = 'bold';
-      nameSpan.style.color = '#3498db';
+      nameSpan.classList.add('current-user');
     }
     
     const deleteBtn = document.createElement('button');
@@ -1855,15 +1893,9 @@ function deleteMemberFixed(memberName) {
   members = members.filter(m => m !== memberName);
   saveMembers(members);
   
-  // 同時從群組的使用者列表中移除
-  if (currentGroup && currentGroup.users) {
-    currentGroup.users = currentGroup.users.filter(u => u !== memberName);
-    saveGroup(currentGroup);
-    
-    // 從該使用者的群組列表中移除此群組
-    const memberGroupIds = JSON.parse(localStorage.getItem(`user_groups_${memberName}`)) || [];
-    const updatedGroupIds = memberGroupIds.filter(id => id !== currentGroup.id);
-    localStorage.setItem(`user_groups_${memberName}`, JSON.stringify(updatedGroupIds));
+  // 使用 helper 函數移除成員
+  if (currentGroup) {
+    removeUserFromGroup(memberName, currentGroup.id);
   }
   
   updateMemberSelect();
@@ -1939,74 +1971,50 @@ if (addMemberForm) {
       return;
     }
     
-    // 檢查成員是否為已註冊的使用者
+    // 檢查成員是否為已註冊的使用者（不區分大小寫）
     const allUsers = getAllUsers();
-    if (!allUsers[memberName]) {
+    const normalizedMemberName = memberName.toLowerCase();
+    const existingUser = Object.keys(allUsers).find(u => u.toLowerCase() === normalizedMemberName);
+    
+    if (!existingUser) {
       alert("該使用者不存在！請確認使用者已註冊。");
       return;
     }
     
+    // 使用實際的使用者名稱（保留原始大小寫）
+    const actualMemberName = existingUser;
+    
     // 檢查成員是否已經在群組中
-    if (currentGroup && currentGroup.users && currentGroup.users.includes(memberName)) {
+    if (currentGroup && currentGroup.users && currentGroup.users.includes(actualMemberName)) {
       alert("該成員已在群組中！");
       return;
     }
     
     // 將使用者加入群組
     if (currentGroup) {
-      if (!currentGroup.users) {
-        currentGroup.users = [];
-      }
-      currentGroup.users.push(memberName);
-      saveGroup(currentGroup);
-      
-      // 同時將群組加入到該使用者的群組列表中
-      const memberGroupIds = JSON.parse(localStorage.getItem(`user_groups_${memberName}`)) || [];
-      if (!memberGroupIds.includes(currentGroup.id)) {
-        memberGroupIds.push(currentGroup.id);
-        localStorage.setItem(`user_groups_${memberName}`, JSON.stringify(memberGroupIds));
-      }
+      addUserToGroupById(actualMemberName, currentGroup.id);
     }
     
-    // 檢查成員是否已存在 (不區分大小寫) - 在成員顯示列表中
+    // 檢查成員是否已存在於顯示列表中
     let members = loadMembers();
-    if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
-      // 已存在於顯示列表，但仍然成功加入群組
-      // 更新下拉選單
-      updateMemberSelect();
-      updateFilterMemberOptionsGroups();
-      
-      // 更新側邊欄組員顯示
-      renderMembersDisplay();
-      
-      // 更新固定位置的組員列表
-      renderMembersDisplayFixed();
-      
-      // 關閉 Modal
-      closeAddMemberModal();
-      
-      alert(`成員「${memberName}」已成功加入群組！`);
-      return;
+    const memberExists = members.some(member => member.toLowerCase() === actualMemberName.toLowerCase());
+    
+    if (!memberExists) {
+      // 新增成員到顯示列表
+      members.push(actualMemberName);
+      saveMembers(members);
     }
     
-    // 新增成員到顯示列表
-    members.push(memberName);
-    saveMembers(members);
-    
-    // 更新下拉選單
+    // 更新 UI
     updateMemberSelect();
     updateFilterMemberOptionsGroups();
-    
-    // 更新側邊欄組員顯示
     renderMembersDisplay();
-    
-    // 更新固定位置的組員列表
     renderMembersDisplayFixed();
     
     // 關閉 Modal
     closeAddMemberModal();
     
-    alert(`成員「${memberName}」已成功加入群組！`);
+    alert(`成員「${actualMemberName}」已成功加入群組！`);
   });
 }
 
@@ -2186,15 +2194,9 @@ function deleteMember(memberName) {
   members = members.filter(m => m !== memberName);
   saveMembers(members);
   
-  // 同時從群組的使用者列表中移除
-  if (currentGroup && currentGroup.users) {
-    currentGroup.users = currentGroup.users.filter(u => u !== memberName);
-    saveGroup(currentGroup);
-    
-    // 從該使用者的群組列表中移除此群組
-    const memberGroupIds = JSON.parse(localStorage.getItem(`user_groups_${memberName}`)) || [];
-    const updatedGroupIds = memberGroupIds.filter(id => id !== currentGroup.id);
-    localStorage.setItem(`user_groups_${memberName}`, JSON.stringify(updatedGroupIds));
+  // 使用 helper 函數移除成員
+  if (currentGroup) {
+    removeUserFromGroup(memberName, currentGroup.id);
   }
   
   updateMemberSelect();
