@@ -9,7 +9,7 @@ function showPage(pageName) {
   const mainPage = document.getElementById('main-page');
   const groupsPage = document.getElementById('groups-page');
   const addGroupBtn = document.getElementById('add-group-btn');
-  const addMemberLink = document.getElementById('add-member-link');
+  const membersDisplay = document.getElementById('members-display');
   
   if (pageName === 'main') {
     mainPage.style.display = 'block';
@@ -19,9 +19,9 @@ function showPage(pageName) {
     if (addGroupBtn) {
       addGroupBtn.style.display = 'none';
     }
-    // 隱藏新增組員按鈕（個人頁面不顯示）
-    if (addMemberLink) {
-      addMemberLink.style.display = 'none';
+    // 隱藏組員列表（個人頁面不顯示）
+    if (membersDisplay) {
+      membersDisplay.style.display = 'none';
     }
   } else if (pageName === 'groups') {
     mainPage.style.display = 'none';
@@ -31,12 +31,15 @@ function showPage(pageName) {
     if (addGroupBtn && currentUser) {
       addGroupBtn.style.display = 'inline-block';
     }
-    // 顯示新增組員按鈕（群組頁面且有選擇群組才顯示）
-    if (addMemberLink && currentUser && currentGroup) {
-      addMemberLink.style.display = 'block';
+    // 顯示組員列表（群組頁面才顯示）
+    if (membersDisplay && currentUser && currentGroup) {
+      membersDisplay.style.display = 'block';
+      renderMembersDisplay();
     }
     // 更新群組標題和說明
     updateGroupHeader();
+    // 重新渲染側邊欄以顯示新增組員按鈕
+    renderGroupsInSidebar();
   }
 }
 
@@ -98,22 +101,6 @@ document.getElementById("home-link").addEventListener("click", (e) => {
   window.scrollTo({ top: 0, behavior: "smooth" });
   closeSidebar();
 });
-
-// 新增組員連結點擊事件
-const addMemberLink = document.getElementById("add-member-link");
-if (addMemberLink) {
-  addMemberLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (currentUser && currentGroup) {
-      openAddMemberModal();
-    } else if (!currentUser) {
-      alert("請先登入");
-    } else {
-      alert("請先選擇一個群組");
-    }
-    closeSidebar();
-  });
-}
 
 // 群組標題點擊事件（展開/收起群組列表）
 const groupsHeader = document.getElementById("groups-header");
@@ -209,6 +196,22 @@ function renderGroupsInSidebar() {
   });
   groupsList.appendChild(addGroupLink);
   
+  // Add "新增組員" link (only show when user is logged in and on groups page)
+  if (currentUser && currentPage === 'groups' && currentGroup) {
+    const addMemberLink = document.createElement("a");
+    addMemberLink.className = "sidebar-group-item add-group-link";
+    addMemberLink.href = "#";
+    addMemberLink.textContent = "+ 新增組員";
+    addMemberLink.style.fontWeight = "bold";
+    addMemberLink.style.color = "#27ae60";
+    addMemberLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      openAddMemberModal();
+      closeSidebar();
+    });
+    groupsList.appendChild(addMemberLink);
+  }
+  
   if (userGroups.length === 0) {
     const emptyMsg = document.createElement("div");
     emptyMsg.style.padding = "12px 20px 12px 40px";
@@ -233,7 +236,8 @@ function renderGroupsInSidebar() {
       renderRecordsGroups(); // 重新渲染紀錄
       updateSummaryGroups(); // 更新統計
       renderChartGroups(); // 更新圓餅圖
-      updateAuthUI(); // 更新 UI，顯示新增組員按鈕
+      renderGroupsInSidebar(); // 重新渲染側邊欄以顯示新增組員按鈕
+      renderMembersDisplay(); // 顯示組員列表
       closeSidebar();
     });
     groupsList.appendChild(groupItem);
@@ -461,7 +465,6 @@ function updateAuthUI() {
   const userInfo = document.getElementById("user-info");
   const usernameDisplay = document.getElementById("username-display");
   const addGroupBtn = document.getElementById("add-group-btn");
-  const addMemberLink = document.getElementById("add-member-link");
   
   if (currentUser) {
     loginBtn.style.display = "none";
@@ -474,12 +477,6 @@ function updateAuthUI() {
     } else if (addGroupBtn) {
       addGroupBtn.style.display = "none";
     }
-    // 只在群組頁面且有選擇群組時顯示新增組員按鈕
-    if (addMemberLink && currentPage === 'groups' && currentGroup) {
-      addMemberLink.style.display = "block";
-    } else if (addMemberLink) {
-      addMemberLink.style.display = "none";
-    }
     // Render groups in sidebar
     renderGroupsInSidebar();
   } else {
@@ -489,10 +486,6 @@ function updateAuthUI() {
     // 未登入時隱藏新增群組按鈕
     if (addGroupBtn) {
       addGroupBtn.style.display = "none";
-    }
-    // 未登入時隱藏新增組員按鈕
-    if (addMemberLink) {
-      addMemberLink.style.display = "none";
     }
   }
 }
@@ -1339,8 +1332,8 @@ function updateMemberSelect() {
   const members = loadMembers();
   const currentValue = memberSelectGroups.value;
   
-  // 清空選項（保留「我」和「其他」）
-  memberSelectGroups.innerHTML = '<option value="">我</option>';
+  // 清空選項（保留「無」和「其他」）
+  memberSelectGroups.innerHTML = '<option value="">無</option>';
   
   // 新增自訂成員選項
   members.forEach(member => {
@@ -1363,6 +1356,33 @@ function updateMemberSelect() {
   
   // 同時更新批次同步的成員選擇器
   updateBatchSyncMemberSelect();
+}
+
+// 渲染側邊欄組員顯示
+function renderMembersDisplay() {
+  const membersDisplay = document.getElementById('members-display');
+  const membersDisplayList = document.getElementById('members-display-list');
+  
+  if (!membersDisplay || !membersDisplayList) return;
+  
+  const members = loadMembers();
+  
+  if (members.length === 0) {
+    membersDisplay.style.display = 'none';
+    return;
+  }
+  
+  membersDisplay.style.display = 'block';
+  membersDisplayList.innerHTML = '';
+  
+  members.forEach(member => {
+    const memberItem = document.createElement('div');
+    memberItem.style.padding = '8px 0';
+    memberItem.style.color = '#333';
+    memberItem.style.fontSize = '14px';
+    memberItem.textContent = '• ' + member;
+    membersDisplayList.appendChild(memberItem);
+  });
 }
 
 // 新增組員 Modal 相關函數
@@ -1415,108 +1435,43 @@ if (addMemberModal) {
   });
 }
 
-// 成員類型切換事件
-const memberTypeSelect = document.getElementById("member-type-select");
-const memberNameGroup = document.getElementById("member-name-group");
-const memberUserGroup = document.getElementById("member-user-group");
-
-if (memberTypeSelect) {
-  memberTypeSelect.addEventListener("change", () => {
-    const memberType = memberTypeSelect.value;
-    if (memberType === "name") {
-      memberNameGroup.style.display = "block";
-      memberUserGroup.style.display = "none";
-      document.getElementById("member-name-input").required = true;
-      document.getElementById("member-user-input").required = false;
-    } else {
-      memberNameGroup.style.display = "none";
-      memberUserGroup.style.display = "block";
-      document.getElementById("member-name-input").required = false;
-      document.getElementById("member-user-input").required = true;
-    }
-  });
-}
-
 // 新增組員表單提交事件
 if (addMemberForm) {
   addMemberForm.addEventListener("submit", (e) => {
     e.preventDefault();
     
-    const memberType = memberTypeSelect ? memberTypeSelect.value : "name";
+    const memberNameInput = document.getElementById("member-name-input");
+    if (!memberNameInput) return;
     
-    if (memberType === "name") {
-      // 新增成員名稱（僅用於記帳）
-      const memberNameInput = document.getElementById("member-name-input");
-      if (!memberNameInput) return;
-      
-      const memberName = memberNameInput.value.trim();
-      
-      if (!memberName) {
-        alert("請輸入成員名稱");
-        return;
-      }
-      
-      // 檢查成員是否已存在 (不區分大小寫)
-      let members = loadMembers();
-      if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
-        alert("該成員已存在！");
-        return;
-      }
-      
-      // 新增成員
-      members.push(memberName);
-      saveMembers(members);
-      
-      // 更新下拉選單
-      updateMemberSelect();
-      updateFilterMemberOptionsGroups();
-      
-      // 關閉 Modal
-      closeAddMemberModal();
-      
-      alert(`成員「${memberName}」已成功新增！`);
-    } else {
-      // 新增使用者帳號（共同編輯）
-      const memberUserInput = document.getElementById("member-user-input");
-      if (!memberUserInput) return;
-      
-      const username = memberUserInput.value.trim();
-      
-      if (!username) {
-        alert("請輸入使用者帳號");
-        return;
-      }
-      
-      // 檢查使用者是否存在
-      const users = getAllUsers();
-      if (!users[username]) {
-        alert("該使用者帳號不存在！請確認帳號是否正確。");
-        return;
-      }
-      
-      // 檢查使用者是否已在群組中
-      if (currentGroup.users && currentGroup.users.includes(username)) {
-        alert("該使用者已在群組中！");
-        return;
-      }
-      
-      // 將使用者加入群組
-      if (!currentGroup.users) currentGroup.users = [];
-      currentGroup.users.push(username);
-      saveGroup(currentGroup);
-      
-      // 將群組加入該使用者的群組列表
-      const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`) || '[]');
-      if (!userGroupIds.includes(currentGroup.id)) {
-        userGroupIds.push(currentGroup.id);
-        localStorage.setItem(`user_groups_${username}`, JSON.stringify(userGroupIds));
-      }
-      
-      // 關閉 Modal
-      closeAddMemberModal();
-      
-      alert(`使用者「${username}」已成功加入群組！該使用者現在可以查看和編輯此群組的資料。`);
+    const memberName = memberNameInput.value.trim();
+    
+    if (!memberName) {
+      alert("請輸入成員名稱");
+      return;
     }
+    
+    // 檢查成員是否已存在 (不區分大小寫)
+    let members = loadMembers();
+    if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
+      alert("該成員已存在！");
+      return;
+    }
+    
+    // 新增成員
+    members.push(memberName);
+    saveMembers(members);
+    
+    // 更新下拉選單
+    updateMemberSelect();
+    updateFilterMemberOptionsGroups();
+    
+    // 更新側邊欄組員顯示
+    renderMembersDisplay();
+    
+    // 關閉 Modal
+    closeAddMemberModal();
+    
+    alert(`成員「${memberName}」已成功新增！`);
   });
 }
 
@@ -1649,68 +1604,11 @@ window.addEventListener("click", (e) => {
 // 渲染成員清單
 function renderMembersList() {
   const members = loadMembers();
-  const groupUsers = currentGroup && currentGroup.users ? currentGroup.users : [];
   
   membersList.innerHTML = "";
   
-  // 顯示群組使用者
-  if (groupUsers.length > 0) {
-    const usersTitle = document.createElement("h3");
-    usersTitle.style.marginTop = "0";
-    usersTitle.style.marginBottom = "10px";
-    usersTitle.style.fontSize = "14px";
-    usersTitle.style.color = "#333";
-    usersTitle.textContent = "共同編輯者（使用者帳號）";
-    membersList.appendChild(usersTitle);
-    
-    groupUsers.forEach(username => {
-      const item = document.createElement("div");
-      item.className = "member-item";
-      item.style.background = "#e8f4f8";
-      
-      const nameSpan = document.createElement("span");
-      nameSpan.className = "member-name";
-      nameSpan.textContent = username + (username === currentUser ? " (我)" : "");
-      
-      // 只有群組創建者可以移除其他使用者
-      if (currentGroup && currentGroup.createdBy === currentUser && username !== currentUser) {
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "btn-delete-member";
-        deleteBtn.textContent = "移除";
-        deleteBtn.addEventListener("click", () => removeUserFromGroup(username));
-        item.appendChild(nameSpan);
-        item.appendChild(deleteBtn);
-      } else {
-        item.appendChild(nameSpan);
-      }
-      
-      membersList.appendChild(item);
-    });
-  }
-  
-  // 顯示成員名稱
-  if (members.length > 0 || groupUsers.length > 0) {
-    const membersTitle = document.createElement("h3");
-    membersTitle.style.marginTop = "20px";
-    membersTitle.style.marginBottom = "10px";
-    membersTitle.style.fontSize = "14px";
-    membersTitle.style.color = "#333";
-    membersTitle.textContent = "成員名稱（僅用於記帳）";
-    membersList.appendChild(membersTitle);
-  }
-  
-  if (members.length === 0 && groupUsers.length === 0) {
-    membersList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">尚無成員</p>';
-    return;
-  }
-  
   if (members.length === 0) {
-    const emptyMsg = document.createElement("p");
-    emptyMsg.style.textAlign = "center";
-    emptyMsg.style.color = "#999";
-    emptyMsg.style.padding = "10px";
-    emptyMsg.textContent = "尚無成員名稱";
-    membersList.appendChild(emptyMsg);
+    membersList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">尚無成員</p>';
     return;
   }
   
@@ -1733,25 +1631,6 @@ function renderMembersList() {
   });
 }
 
-// 從群組移除使用者
-function removeUserFromGroup(username) {
-  if (!confirm(`確定要將使用者「${username}」從群組中移除嗎？`)) return;
-  
-  // 從群組的使用者列表中移除
-  if (currentGroup && currentGroup.users) {
-    currentGroup.users = currentGroup.users.filter(u => u !== username);
-    saveGroup(currentGroup);
-  }
-  
-  // 從該使用者的群組列表中移除
-  const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`) || '[]');
-  const updatedGroupIds = userGroupIds.filter(id => id !== currentGroup.id);
-  localStorage.setItem(`user_groups_${username}`, JSON.stringify(updatedGroupIds));
-  
-  renderMembersList();
-  alert(`使用者「${username}」已從群組中移除`);
-}
-
 // 刪除成員
 function deleteMember(memberName) {
   if (!confirm(`確定要刪除成員「${memberName}」嗎？`)) return;
@@ -1762,6 +1641,7 @@ function deleteMember(memberName) {
   
   updateMemberSelect();
   renderMembersList();
+  renderMembersDisplay(); // 同時更新側邊欄顯示
   updateFilterMemberOptionsGroups();
 }
 
