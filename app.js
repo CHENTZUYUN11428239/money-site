@@ -389,26 +389,35 @@ if (editGroupNameForm) {
     e.preventDefault();
     console.log('Form submitted'); // Debug log
     
-    if (!contextMenuTargetGroup) {
-      console.log('No target group'); // Debug log
-      return;
-    }
-    
     const nameInput = document.getElementById('edit-group-name-input');
     const newName = nameInput.value.trim();
+    const groupId = nameInput.getAttribute('data-group-id');
+    
+    if (!groupId) {
+      console.log('No group ID found'); // Debug log
+      alert('無法找到群組資料！');
+      return;
+    }
     
     if (!newName) {
       alert('請輸入群組名稱！');
       return;
     }
     
+    // 從 storage 載入群組以確保資料最新
+    const groupToEdit = getGroup(groupId);
+    if (!groupToEdit) {
+      alert('群組不存在！');
+      return;
+    }
+    
     // 更新群組名稱
-    const oldName = contextMenuTargetGroup.name;
-    contextMenuTargetGroup.name = newName;
-    saveGroup(contextMenuTargetGroup);
+    const oldName = groupToEdit.name;
+    groupToEdit.name = newName;
+    saveGroup(groupToEdit);
     
     // 如果是當前群組，更新顯示
-    if (currentGroup && currentGroup.id === contextMenuTargetGroup.id) {
+    if (currentGroup && currentGroup.id === groupId) {
       currentGroup.name = newName;
       updateGroupHeader();
     }
@@ -420,7 +429,6 @@ if (editGroupNameForm) {
     if (editGroupNameModal) {
       editGroupNameModal.classList.remove('show');
     }
-    hideGroupContextMenu();
     
     alert(`群組名稱已從「${oldName}」更新為「${newName}」！`);
   });
@@ -437,8 +445,13 @@ if (contextEditGroupName) {
   contextEditGroupName.addEventListener('click', () => {
     if (!contextMenuTargetGroup) return;
     
+    // 保存群組引用以供 form submit 使用
+    // 因為 hideGroupContextMenu() 會將 contextMenuTargetGroup 設為 null
+    const groupToEdit = contextMenuTargetGroup;
+    
     // 填入當前群組名稱
-    document.getElementById('edit-group-name-input').value = contextMenuTargetGroup.name;
+    document.getElementById('edit-group-name-input').value = groupToEdit.name;
+    document.getElementById('edit-group-name-input').setAttribute('data-group-id', groupToEdit.id);
     
     // 顯示 modal
     if (editGroupNameModal) {
