@@ -417,8 +417,21 @@
       <h2>新增組員</h2>
       <form id="add-member-form">
         <div class="form-group">
-          <label for="member-name-input">組員名稱</label>
-          <input type="text" id="member-name-input" placeholder="輸入組員名稱" required />
+          <label>組員類型</label>
+          <select id="member-type-select" style="width: 100%; padding: 10px; border: 1px solid #e6e8ee; border-radius: 12px;">
+            <option value="name">成員名稱（僅用於記帳）</option>
+            <option value="user">使用者帳號（共同編輯）</option>
+          </select>
+        </div>
+        <div class="form-group" id="member-name-group">
+          <label for="member-name-input">成員名稱</label>
+          <input type="text" id="member-name-input" placeholder="輸入成員名稱（如：小明、小華）" />
+          <small style="color: #666; font-size: 12px;">此成員名稱僅用於標記誰支付了費用</small>
+        </div>
+        <div class="form-group" id="member-user-group" style="display: none;">
+          <label for="member-user-input">使用者帳號</label>
+          <input type="text" id="member-user-input" placeholder="輸入已註冊的使用者帳號" />
+          <small style="color: #666; font-size: 12px;">該使用者將可以查看和編輯此群組的所有資料</small>
         </div>
         <div class="modal-actions">
           <button type="submit" class="btn primary">新增組員</button>

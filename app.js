@@ -128,25 +128,61 @@ groupsHeader.addEventListener("click", () => {
 /* ===== 群組管理 ===== */
 let userGroups = []; // Store user's groups
 
-// Get groups key for current user
-function getGroupsKey() {
-  if (!currentUser) return null;
-  return `groups_${currentUser}`;
+// Get a single group by ID from global storage
+function getGroup(groupId) {
+  const data = localStorage.getItem(`group_${groupId}`);
+  return data ? JSON.parse(data) : null;
 }
 
-// Load groups from localStorage
-function loadGroups() {
-  const key = getGroupsKey();
-  if (!key) return [];
-  const data = localStorage.getItem(key);
+// Save a single group to global storage
+function saveGroup(group) {
+  localStorage.setItem(`group_${group.id}`, JSON.stringify(group));
+}
+
+// Get the list of group IDs that current user belongs to
+function getUserGroupIds() {
+  if (!currentUser) return [];
+  const data = localStorage.getItem(`user_groups_${currentUser}`);
   return data ? JSON.parse(data) : [];
 }
 
-// Save groups to localStorage
-function saveGroups(groups) {
-  const key = getGroupsKey();
-  if (key) {
-    localStorage.setItem(key, JSON.stringify(groups));
+// Save the list of group IDs that current user belongs to
+function saveUserGroupIds(groupIds) {
+  if (!currentUser) return;
+  localStorage.setItem(`user_groups_${currentUser}`, JSON.stringify(groupIds));
+}
+
+// Load groups that current user belongs to
+function loadGroups() {
+  if (!currentUser) return [];
+  const groupIds = getUserGroupIds();
+  const groups = [];
+  for (const groupId of groupIds) {
+    const group = getGroup(groupId);
+    if (group) {
+      groups.push(group);
+    }
+  }
+  return groups;
+}
+
+// Add current user to a group
+function addUserToGroup(groupId) {
+  if (!currentUser) return;
+  const groupIds = getUserGroupIds();
+  if (!groupIds.includes(groupId)) {
+    groupIds.push(groupId);
+    saveUserGroupIds(groupIds);
+  }
+  
+  // Also update the group's member list
+  const group = getGroup(groupId);
+  if (group) {
+    if (!group.users) group.users = [];
+    if (!group.users.includes(currentUser)) {
+      group.users.push(currentUser);
+      saveGroup(group);
+    }
   }
 }
 
@@ -290,11 +326,16 @@ if (addGroupForm) {
       id: Date.now(),
       name: groupName,
       description: groupDesc,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      createdBy: currentUser,
+      users: [currentUser] // Add creator to the group
     };
     
-    existingGroups.push(newGroup);
-    saveGroups(existingGroups);
+    // Save group to global storage
+    saveGroup(newGroup);
+    
+    // Add group to current user's group list
+    addUserToGroup(newGroup.id);
     
     // 設置為當前群組
     currentGroup = newGroup;
@@ -1189,10 +1230,8 @@ let chartTypeGroups = "total";
 let selectedMonthGroups = "";
 let selectedYearGroups = "";
 
-// 取得當前登入使用者和群組的紀錄 key
+// 取得當前群組的紀錄 key（共用儲存，不依賴使用者）
 function getGroupsRecordsKey() {
-  const currentUserName = localStorage.getItem("currentUser");
-  if (!currentUserName) return null;
   if (!currentGroup || !currentGroup.id) {
     // 如果沒有當前群組，嘗試載入第一個群組
     const groups = loadGroups();
@@ -1202,7 +1241,8 @@ function getGroupsRecordsKey() {
       return null;
     }
   }
-  return `records_group_${currentUserName}_${currentGroup.id}`;
+  // 使用共用的群組紀錄鍵（不包含使用者名稱）
+  return `records_group_${currentGroup.id}`;
 }
 
 // 載入群組紀錄（當前群組）
@@ -1273,11 +1313,10 @@ categorySelectGroups.addEventListener("change", () => {
 });
 
 // 成員管理功能
-// 取得成員清單的 localStorage key (per group)
+// 取得成員清單的 localStorage key（共用儲存，不依賴使用者）
 function getMembersKey() {
-  const currentUser = localStorage.getItem("currentUser");
-  if (!currentUser || !currentGroup) return null;
-  return `members_${currentUser}_${currentGroup.id}`;
+  if (!currentGroup) return null;
+  return `members_group_${currentGroup.id}`;
 }
 
 // 載入成員清單
@@ -1376,40 +1415,108 @@ if (addMemberModal) {
   });
 }
 
+// 成員類型切換事件
+const memberTypeSelect = document.getElementById("member-type-select");
+const memberNameGroup = document.getElementById("member-name-group");
+const memberUserGroup = document.getElementById("member-user-group");
+
+if (memberTypeSelect) {
+  memberTypeSelect.addEventListener("change", () => {
+    const memberType = memberTypeSelect.value;
+    if (memberType === "name") {
+      memberNameGroup.style.display = "block";
+      memberUserGroup.style.display = "none";
+      document.getElementById("member-name-input").required = true;
+      document.getElementById("member-user-input").required = false;
+    } else {
+      memberNameGroup.style.display = "none";
+      memberUserGroup.style.display = "block";
+      document.getElementById("member-name-input").required = false;
+      document.getElementById("member-user-input").required = true;
+    }
+  });
+}
+
 // 新增組員表單提交事件
 if (addMemberForm) {
   addMemberForm.addEventListener("submit", (e) => {
     e.preventDefault();
     
-    const memberNameInput = document.getElementById("member-name-input");
-    if (!memberNameInput) return;
+    const memberType = memberTypeSelect ? memberTypeSelect.value : "name";
     
-    const memberName = memberNameInput.value.trim();
-    
-    if (!memberName) {
-      alert("請輸入組員名稱");
-      return;
+    if (memberType === "name") {
+      // 新增成員名稱（僅用於記帳）
+      const memberNameInput = document.getElementById("member-name-input");
+      if (!memberNameInput) return;
+      
+      const memberName = memberNameInput.value.trim();
+      
+      if (!memberName) {
+        alert("請輸入成員名稱");
+        return;
+      }
+      
+      // 檢查成員是否已存在 (不區分大小寫)
+      let members = loadMembers();
+      if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
+        alert("該成員已存在！");
+        return;
+      }
+      
+      // 新增成員
+      members.push(memberName);
+      saveMembers(members);
+      
+      // 更新下拉選單
+      updateMemberSelect();
+      updateFilterMemberOptionsGroups();
+      
+      // 關閉 Modal
+      closeAddMemberModal();
+      
+      alert(`成員「${memberName}」已成功新增！`);
+    } else {
+      // 新增使用者帳號（共同編輯）
+      const memberUserInput = document.getElementById("member-user-input");
+      if (!memberUserInput) return;
+      
+      const username = memberUserInput.value.trim();
+      
+      if (!username) {
+        alert("請輸入使用者帳號");
+        return;
+      }
+      
+      // 檢查使用者是否存在
+      const users = getAllUsers();
+      if (!users[username]) {
+        alert("該使用者帳號不存在！請確認帳號是否正確。");
+        return;
+      }
+      
+      // 檢查使用者是否已在群組中
+      if (currentGroup.users && currentGroup.users.includes(username)) {
+        alert("該使用者已在群組中！");
+        return;
+      }
+      
+      // 將使用者加入群組
+      if (!currentGroup.users) currentGroup.users = [];
+      currentGroup.users.push(username);
+      saveGroup(currentGroup);
+      
+      // 將群組加入該使用者的群組列表
+      const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`) || '[]');
+      if (!userGroupIds.includes(currentGroup.id)) {
+        userGroupIds.push(currentGroup.id);
+        localStorage.setItem(`user_groups_${username}`, JSON.stringify(userGroupIds));
+      }
+      
+      // 關閉 Modal
+      closeAddMemberModal();
+      
+      alert(`使用者「${username}」已成功加入群組！該使用者現在可以查看和編輯此群組的資料。`);
     }
-    
-    // 檢查成員是否已存在 (不區分大小寫)
-    let members = loadMembers();
-    if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
-      alert("該組員已存在！");
-      return;
-    }
-    
-    // 新增成員
-    members.push(memberName);
-    saveMembers(members);
-    
-    // 更新下拉選單
-    updateMemberSelect();
-    updateFilterMemberOptionsGroups();
-    
-    // 關閉 Modal
-    closeAddMemberModal();
-    
-    alert(`組員「${memberName}」已成功新增！`);
   });
 }
 
@@ -1542,10 +1649,68 @@ window.addEventListener("click", (e) => {
 // 渲染成員清單
 function renderMembersList() {
   const members = loadMembers();
+  const groupUsers = currentGroup && currentGroup.users ? currentGroup.users : [];
+  
   membersList.innerHTML = "";
   
+  // 顯示群組使用者
+  if (groupUsers.length > 0) {
+    const usersTitle = document.createElement("h3");
+    usersTitle.style.marginTop = "0";
+    usersTitle.style.marginBottom = "10px";
+    usersTitle.style.fontSize = "14px";
+    usersTitle.style.color = "#333";
+    usersTitle.textContent = "共同編輯者（使用者帳號）";
+    membersList.appendChild(usersTitle);
+    
+    groupUsers.forEach(username => {
+      const item = document.createElement("div");
+      item.className = "member-item";
+      item.style.background = "#e8f4f8";
+      
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "member-name";
+      nameSpan.textContent = username + (username === currentUser ? " (我)" : "");
+      
+      // 只有群組創建者可以移除其他使用者
+      if (currentGroup && currentGroup.createdBy === currentUser && username !== currentUser) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn-delete-member";
+        deleteBtn.textContent = "移除";
+        deleteBtn.addEventListener("click", () => removeUserFromGroup(username));
+        item.appendChild(nameSpan);
+        item.appendChild(deleteBtn);
+      } else {
+        item.appendChild(nameSpan);
+      }
+      
+      membersList.appendChild(item);
+    });
+  }
+  
+  // 顯示成員名稱
+  if (members.length > 0 || groupUsers.length > 0) {
+    const membersTitle = document.createElement("h3");
+    membersTitle.style.marginTop = "20px";
+    membersTitle.style.marginBottom = "10px";
+    membersTitle.style.fontSize = "14px";
+    membersTitle.style.color = "#333";
+    membersTitle.textContent = "成員名稱（僅用於記帳）";
+    membersList.appendChild(membersTitle);
+  }
+  
+  if (members.length === 0 && groupUsers.length === 0) {
+    membersList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">尚無成員</p>';
+    return;
+  }
+  
   if (members.length === 0) {
-    membersList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">尚無自訂成員</p>';
+    const emptyMsg = document.createElement("p");
+    emptyMsg.style.textAlign = "center";
+    emptyMsg.style.color = "#999";
+    emptyMsg.style.padding = "10px";
+    emptyMsg.textContent = "尚無成員名稱";
+    membersList.appendChild(emptyMsg);
     return;
   }
   
@@ -1566,6 +1731,25 @@ function renderMembersList() {
     item.appendChild(deleteBtn);
     membersList.appendChild(item);
   });
+}
+
+// 從群組移除使用者
+function removeUserFromGroup(username) {
+  if (!confirm(`確定要將使用者「${username}」從群組中移除嗎？`)) return;
+  
+  // 從群組的使用者列表中移除
+  if (currentGroup && currentGroup.users) {
+    currentGroup.users = currentGroup.users.filter(u => u !== username);
+    saveGroup(currentGroup);
+  }
+  
+  // 從該使用者的群組列表中移除
+  const userGroupIds = JSON.parse(localStorage.getItem(`user_groups_${username}`) || '[]');
+  const updatedGroupIds = userGroupIds.filter(id => id !== currentGroup.id);
+  localStorage.setItem(`user_groups_${username}`, JSON.stringify(updatedGroupIds));
+  
+  renderMembersList();
+  alert(`使用者「${username}」已從群組中移除`);
 }
 
 // 刪除成員
