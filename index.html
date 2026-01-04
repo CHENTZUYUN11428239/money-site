@@ -59,6 +59,24 @@
     </div>
   </div>
 
+  <!-- 編輯群組名稱彈窗 -->
+  <div id="edit-group-name-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" id="edit-group-name-modal-close">&times;</span>
+      <h2>修改群組名稱</h2>
+      <form id="edit-group-name-form">
+        <div class="form-group">
+          <label for="edit-group-name-input">群組名稱</label>
+          <input type="text" id="edit-group-name-input" placeholder="輸入新的群組名稱" required />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn primary">儲存</button>
+          <button type="button" class="btn" id="edit-group-name-modal-cancel">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- 編輯群組說明彈窗 -->
   <div id="edit-group-modal" class="modal">
     <div class="modal-content">
@@ -83,6 +101,7 @@
 
   <!-- 群組右鍵選單 -->
   <div id="group-context-menu" class="context-menu" style="display: none;">
+    <div class="context-menu-item" id="context-edit-group-name">修改群組名稱</div>
     <div class="context-menu-item" id="context-edit-group">修改群組說明</div>
     <div class="context-menu-item" id="context-delete-group">刪除群組</div>
   </div>
