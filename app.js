@@ -731,7 +731,11 @@ function saveUsers(users) {
 function registerUser(username, password) {
   const users = getAllUsers();
   
-  if (users[username]) {
+  // 檢查帳號是否已存在（不區分大小寫）
+  const normalizedUsername = username.toLowerCase();
+  const existingUser = Object.keys(users).find(u => u.toLowerCase() === normalizedUsername);
+  
+  if (existingUser) {
     return { success: false, message: "此帳號已存在" };
   }
   
@@ -756,16 +760,20 @@ function registerUser(username, password) {
 function loginUser(username, password) {
   const users = getAllUsers();
   
-  if (!users[username]) {
+  // 不區分大小寫查找使用者
+  const normalizedUsername = username.toLowerCase();
+  const actualUsername = Object.keys(users).find(u => u.toLowerCase() === normalizedUsername);
+  
+  if (!actualUsername) {
     return { success: false, message: "帳號不存在" };
   }
   
-  if (users[username].password !== password) {
+  if (users[actualUsername].password !== password) {
     return { success: false, message: "密碼錯誤" };
   }
   
-  currentUser = username;
-  localStorage.setItem("currentUser", username);
+  currentUser = actualUsername;
+  localStorage.setItem("currentUser", actualUsername);
   return { success: true, message: "登入成功！" };
 }
 
@@ -2001,6 +2009,9 @@ if (addMemberForm) {
     // 將使用者加入群組
     if (currentGroup) {
       addUserToGroupById(actualMemberName, currentGroup.id);
+      
+      // 重新載入當前群組資料以確保 users 列表是最新的
+      currentGroup = getGroup(currentGroup.id);
     }
     
     // 檢查成員是否已存在於顯示列表中
@@ -2022,7 +2033,7 @@ if (addMemberForm) {
     // 關閉 Modal
     closeAddMemberModal();
     
-    alert(`成員「${actualMemberName}」已成功加入群組！`);
+    alert(`成員「${actualMemberName}」已成功加入群組！\n\n提示：該成員需要重新整理頁面 (F5) 才能看到新群組。`);
   });
 }
 
