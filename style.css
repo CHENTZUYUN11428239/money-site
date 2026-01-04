@@ -552,6 +552,109 @@ header {
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
 }
 
+/* ===== 新增組員按鈕 (固定在右側，新增群組下方) ===== */
+.add-member-btn-fixed {
+  position: fixed !important;
+  right: 20px;
+  top: calc(50% + 80px);
+  z-index: 900;
+  padding: 16px 24px;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 4px;
+}
+
+.add-member-btn-fixed:hover {
+  background: #229954;
+  transform: translateX(-5px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+/* ===== 組員列表 (固定在左側) ===== */
+.members-display-fixed {
+  position: fixed;
+  left: 20px;
+  top: 100px;
+  z-index: 900;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  max-width: 200px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.members-display-fixed h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+  border-bottom: 2px solid #e6e8ee;
+  padding-bottom: 10px;
+}
+
+.members-display-fixed #members-list-fixed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.member-item-fixed {
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  font-size: 14px;
+  color: #333;
+  position: relative;
+}
+
+.member-item-fixed:hover {
+  background: #e8f4f8;
+  border-color: #3498db;
+  transform: translateX(5px);
+}
+
+.member-item-fixed.show-delete {
+  background: #ffebee;
+  border-color: #e74c3c;
+}
+
+.member-delete-btn {
+  display: none;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.member-item-fixed.show-delete .member-delete-btn {
+  display: block;
+}
+
+.member-item-fixed.show-delete .member-name {
+  margin-right: 50px;
+}
+
 /* ===== Modal 樣式 ===== */
 .modal {
   display: none;
