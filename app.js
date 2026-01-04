@@ -9,6 +9,7 @@ function showPage(pageName) {
   const mainPage = document.getElementById('main-page');
   const groupsPage = document.getElementById('groups-page');
   const addGroupBtn = document.getElementById('add-group-btn');
+  const addMemberLink = document.getElementById('add-member-link');
   
   if (pageName === 'main') {
     mainPage.style.display = 'block';
@@ -18,6 +19,10 @@ function showPage(pageName) {
     if (addGroupBtn) {
       addGroupBtn.style.display = 'none';
     }
+    // 隱藏新增組員按鈕（個人頁面不顯示）
+    if (addMemberLink) {
+      addMemberLink.style.display = 'none';
+    }
   } else if (pageName === 'groups') {
     mainPage.style.display = 'none';
     groupsPage.style.display = 'block';
@@ -25,6 +30,10 @@ function showPage(pageName) {
     // 顯示新增群組按鈕（群組頁面才顯示）
     if (addGroupBtn && currentUser) {
       addGroupBtn.style.display = 'inline-block';
+    }
+    // 顯示新增組員按鈕（群組頁面且有選擇群組才顯示）
+    if (addMemberLink && currentUser && currentGroup) {
+      addMemberLink.style.display = 'block';
     }
     // 更新群組標題和說明
     updateGroupHeader();
@@ -89,6 +98,22 @@ document.getElementById("home-link").addEventListener("click", (e) => {
   window.scrollTo({ top: 0, behavior: "smooth" });
   closeSidebar();
 });
+
+// 新增組員連結點擊事件
+const addMemberLink = document.getElementById("add-member-link");
+if (addMemberLink) {
+  addMemberLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentUser && currentGroup) {
+      openAddMemberModal();
+    } else if (!currentUser) {
+      alert("請先登入");
+    } else {
+      alert("請先選擇一個群組");
+    }
+    closeSidebar();
+  });
+}
 
 // 群組標題點擊事件（展開/收起群組列表）
 const groupsHeader = document.getElementById("groups-header");
@@ -172,6 +197,7 @@ function renderGroupsInSidebar() {
       renderRecordsGroups(); // 重新渲染紀錄
       updateSummaryGroups(); // 更新統計
       renderChartGroups(); // 更新圓餅圖
+      updateAuthUI(); // 更新 UI，顯示新增組員按鈕
       closeSidebar();
     });
     groupsList.appendChild(groupItem);
@@ -394,6 +420,7 @@ function updateAuthUI() {
   const userInfo = document.getElementById("user-info");
   const usernameDisplay = document.getElementById("username-display");
   const addGroupBtn = document.getElementById("add-group-btn");
+  const addMemberLink = document.getElementById("add-member-link");
   
   if (currentUser) {
     loginBtn.style.display = "none";
@@ -406,6 +433,12 @@ function updateAuthUI() {
     } else if (addGroupBtn) {
       addGroupBtn.style.display = "none";
     }
+    // 只在群組頁面且有選擇群組時顯示新增組員按鈕
+    if (addMemberLink && currentPage === 'groups' && currentGroup) {
+      addMemberLink.style.display = "block";
+    } else if (addMemberLink) {
+      addMemberLink.style.display = "none";
+    }
     // Render groups in sidebar
     renderGroupsInSidebar();
   } else {
@@ -415,6 +448,10 @@ function updateAuthUI() {
     // 未登入時隱藏新增群組按鈕
     if (addGroupBtn) {
       addGroupBtn.style.display = "none";
+    }
+    // 未登入時隱藏新增組員按鈕
+    if (addMemberLink) {
+      addMemberLink.style.display = "none";
     }
   }
 }
@@ -1263,8 +1300,8 @@ function updateMemberSelect() {
   const members = loadMembers();
   const currentValue = memberSelectGroups.value;
   
-  // 清空選項（保留「無」和「其他」）
-  memberSelectGroups.innerHTML = '<option value="">無</option>';
+  // 清空選項（保留「我」和「其他」）
+  memberSelectGroups.innerHTML = '<option value="">我</option>';
   
   // 新增自訂成員選項
   members.forEach(member => {
@@ -1287,6 +1324,93 @@ function updateMemberSelect() {
   
   // 同時更新批次同步的成員選擇器
   updateBatchSyncMemberSelect();
+}
+
+// 新增組員 Modal 相關函數
+const addMemberModal = document.getElementById("add-member-modal");
+const addMemberModalClose = document.getElementById("add-member-modal-close");
+const addMemberModalCancel = document.getElementById("add-member-modal-cancel");
+const addMemberForm = document.getElementById("add-member-form");
+
+// 開啟新增組員 Modal
+function openAddMemberModal() {
+  if (!currentGroup) {
+    alert("請先選擇一個群組");
+    return;
+  }
+  if (addMemberModal) {
+    addMemberModal.classList.add("show");
+    const memberNameInput = document.getElementById("member-name-input");
+    if (memberNameInput) {
+      memberNameInput.value = "";
+      memberNameInput.focus();
+    }
+  }
+}
+
+// 關閉新增組員 Modal
+function closeAddMemberModal() {
+  if (addMemberModal) {
+    addMemberModal.classList.remove("show");
+  }
+  if (addMemberForm) {
+    addMemberForm.reset();
+  }
+}
+
+// Modal 關閉按鈕事件
+if (addMemberModalClose) {
+  addMemberModalClose.addEventListener("click", closeAddMemberModal);
+}
+
+if (addMemberModalCancel) {
+  addMemberModalCancel.addEventListener("click", closeAddMemberModal);
+}
+
+// 點擊 Modal 外部關閉
+if (addMemberModal) {
+  addMemberModal.addEventListener("click", (e) => {
+    if (e.target === addMemberModal) {
+      closeAddMemberModal();
+    }
+  });
+}
+
+// 新增組員表單提交事件
+if (addMemberForm) {
+  addMemberForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    
+    const memberNameInput = document.getElementById("member-name-input");
+    if (!memberNameInput) return;
+    
+    const memberName = memberNameInput.value.trim();
+    
+    if (!memberName) {
+      alert("請輸入組員名稱");
+      return;
+    }
+    
+    // 檢查成員是否已存在 (不區分大小寫)
+    let members = loadMembers();
+    if (members.some(member => member.toLowerCase() === memberName.toLowerCase())) {
+      alert("該組員已存在！");
+      return;
+    }
+    
+    // 新增成員
+    members.push(memberName);
+    saveMembers(members);
+    
+    // 更新下拉選單
+    updateMemberSelect();
+    updateFilterMemberOptionsGroups();
+    
+    // 關閉 Modal
+    closeAddMemberModal();
+    
+    alert(`組員「${memberName}」已成功新增！`);
+  });
 }
 
 // 更新批次同步成員選擇器
