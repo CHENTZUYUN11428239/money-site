@@ -429,7 +429,6 @@ if (contextEditGroupName) {
     document.getElementById('edit-group-name-input').value = contextMenuTargetGroup.name;
     
     // 顯示 modal
-    const editGroupNameModal = document.getElementById('edit-group-name-modal');
     if (editGroupNameModal) {
       editGroupNameModal.classList.add('show');
     }
@@ -2300,12 +2299,21 @@ function renderChartGroups() {
     if (chartTypeGroups === "member") {
       const memberData = {};
       
-      // Get unique members and assign consistent colors
-      const allMembers = [...new Set(dataToChart.map(r => r.member).filter(m => m))];
+      // Get unique members and assign consistent colors (including empty member as "無")
+      const allMembersSet = new Set(dataToChart.map(r => r.member || '無'));
+      const allMembers = Array.from(allMembersSet).sort((a, b) => {
+        // Sort "無" last
+        if (a === '無') return 1;
+        if (b === '無') return -1;
+        return a.localeCompare(b, 'zh-TW');
+      });
+      
       const memberColors = {};
+      // Use more contrasting colors with variations for income/expense
       const baseColors = [
         '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', 
-        '#1abc9c', '#e67e22', '#34495e', '#16a085', '#d35400'
+        '#1abc9c', '#e67e22', '#34495e', '#16a085', '#d35400',
+        '#2980b9', '#c0392b', '#27ae60', '#d68910', '#8e44ad'
       ];
       
       allMembers.forEach((member, index) => {
@@ -2313,19 +2321,19 @@ function renderChartGroups() {
       });
       
       dataToChart.forEach(r => {
-        if (!r.member) return;
+        const memberName = r.member || '無';
         
-        const incomeKey = `${r.member}-收入`;
-        const expenseKey = `${r.member}-支出`;
+        const incomeKey = `${memberName}-收入`;
+        const expenseKey = `${memberName}-支出`;
         
         if (r.type === '收入') {
           if (!memberData[incomeKey]) {
-            memberData[incomeKey] = { member: r.member, type: '收入', amount: 0 };
+            memberData[incomeKey] = { member: memberName, type: '收入', amount: 0 };
           }
           memberData[incomeKey].amount += r.amount;
         } else if (r.type === '支出') {
           if (!memberData[expenseKey]) {
-            memberData[expenseKey] = { member: r.member, type: '支出', amount: 0 };
+            memberData[expenseKey] = { member: memberName, type: '支出', amount: 0 };
           }
           memberData[expenseKey].amount += r.amount;
         }
@@ -2337,16 +2345,39 @@ function renderChartGroups() {
       
       // Sort by member name, then by type (收入 first, then 支出) to group same members together
       const sortedData = Object.values(memberData).sort((a, b) => {
+        // Sort "無" last
+        if (a.member === '無' && b.member !== '無') return 1;
+        if (a.member !== '無' && b.member === '無') return -1;
+        
         if (a.member === b.member) {
           return a.type === '收入' ? -1 : 1;
         }
         return a.member.localeCompare(b.member, 'zh-TW');
       });
       
+      // Helper function to adjust color brightness for better distinction
+      const adjustColorBrightness = (hex, percent) => {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+        const G = Math.min(255, Math.max(0, (num >> 8 & 0x00FF) + amt));
+        const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+        return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+      };
+      
       sortedData.forEach(item => {
         labels.push(`${item.member}(${item.type})`);
         data.push(item.amount);
-        colors.push(memberColors[item.member]);
+        
+        // Use base color for income, darker version for expense to create distinction
+        const baseColor = memberColors[item.member];
+        if (item.type === '收入') {
+          // Lighter for income
+          colors.push(adjustColorBrightness(baseColor, 15));
+        } else {
+          // Darker for expense
+          colors.push(adjustColorBrightness(baseColor, -35));
+        }
       });
       
       const hasData = data.length > 0 && data.some(d => d > 0);
