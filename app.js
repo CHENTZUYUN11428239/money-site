@@ -2033,7 +2033,7 @@ if (addMemberForm) {
     // 關閉 Modal
     closeAddMemberModal();
     
-    alert(`成員「${actualMemberName}」已成功加入群組！`);
+    alert(`成員「${actualMemberName}」已成功加入群組！\n\n提示：該成員需要重新整理頁面 (F5) 才能看到新群組。`);
   });
 }
 
