@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <title>團隊財務記帳系統</title>
+  <title>零用錢記帳小管家</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -18,13 +18,13 @@
   <!-- 側邊欄 -->
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
-      <h2>導覽</h2>
+      <h2>選單</h2>
     </div>
     <nav class="sidebar-nav">
-      <a href="#" class="sidebar-link" id="home-link">👤 個人帳本</a>
+      <a href="#" class="sidebar-link" id="home-link">👤 個人</a>
       <div class="sidebar-groups">
         <div class="sidebar-groups-header" id="groups-header">
-          <span>👥 團隊帳本</span>
+          <span>👥 群組</span>
           <span class="expand-icon">▼</span>
         </div>
         <div class="sidebar-groups-list" id="groups-list" style="display: none;">
@@ -41,18 +41,18 @@
   <div id="add-group-modal" class="modal">
     <div class="modal-content">
       <span class="modal-close" id="add-group-modal-close">&times;</span>
-      <h2>新增帳本／專案</h2>
+      <h2>新增群組</h2>
       <form id="add-group-form">
         <div class="form-group">
-          <label for="group-name-input">帳本名稱</label>
-          <input type="text" id="group-name-input" placeholder="輸入帳本／專案名稱" required />
+          <label for="group-name-input">群組名稱</label>
+          <input type="text" id="group-name-input" placeholder="輸入群組名稱" required />
         </div>
         <div class="form-group">
-          <label for="group-desc-input">帳本說明（選填）</label>
-          <textarea id="group-desc-input" placeholder="帳本用途、部門或專案說明" rows="3"></textarea>
+          <label for="group-desc-input">群組說明（選填）</label>
+          <textarea id="group-desc-input" placeholder="群組說明或用途" rows="3"></textarea>
         </div>
         <div class="modal-actions">
-          <button type="submit" class="btn primary">建立帳本</button>
+          <button type="submit" class="btn primary">建立群組</button>
           <button type="button" class="btn" id="add-group-modal-cancel">取消</button>
         </div>
       </form>
@@ -63,11 +63,11 @@
   <div id="edit-group-name-modal" class="modal">
     <div class="modal-content">
       <span class="modal-close" id="edit-group-name-modal-close">&times;</span>
-      <h2>修改帳本名稱</h2>
+      <h2>修改群組名稱</h2>
       <form id="edit-group-name-form">
         <div class="form-group">
-          <label for="edit-group-name-input">帳本名稱</label>
-          <input type="text" id="edit-group-name-input" placeholder="輸入新的帳本名稱" required />
+          <label for="edit-group-name-input">群組名稱</label>
+          <input type="text" id="edit-group-name-input" placeholder="輸入新的群組名稱" required />
         </div>
         <div class="modal-actions">
           <button type="submit" class="btn primary">儲存</button>
@@ -81,15 +81,15 @@
   <div id="edit-group-modal" class="modal">
     <div class="modal-content">
       <span class="modal-close" id="edit-group-modal-close">&times;</span>
-      <h2>修改帳本說明</h2>
+      <h2>修改群組說明</h2>
       <form id="edit-group-form">
         <div class="form-group">
-          <label for="edit-group-name">帳本名稱</label>
+          <label for="edit-group-name">群組名稱</label>
           <input type="text" id="edit-group-name" readonly style="background: #f5f5f5; cursor: not-allowed;" />
         </div>
         <div class="form-group">
-          <label for="edit-group-desc-input">帳本說明</label>
-          <textarea id="edit-group-desc-input" placeholder="帳本用途、部門或專案說明" rows="3"></textarea>
+          <label for="edit-group-desc-input">群組說明</label>
+          <textarea id="edit-group-desc-input" placeholder="群組說明或用途" rows="3"></textarea>
         </div>
         <div class="modal-actions">
           <button type="submit" class="btn primary">儲存</button>
@@ -101,9 +101,9 @@
 
   <!-- 群組右鍵選單 -->
   <div id="group-context-menu" class="context-menu" style="display: none;">
-    <div class="context-menu-item" id="context-edit-group-name">修改帳本名稱</div>
-    <div class="context-menu-item" id="context-edit-group">修改帳本說明</div>
-    <div class="context-menu-item" id="context-delete-group">刪除帳本</div>
+    <div class="context-menu-item" id="context-edit-group-name">修改群組名稱</div>
+    <div class="context-menu-item" id="context-edit-group">修改群組說明</div>
+    <div class="context-menu-item" id="context-delete-group">刪除群組</div>
   </div>
 
   <!-- 右上角登入/註冊區域 -->
@@ -117,15 +117,15 @@
   </div>
 
   <!-- 新增群組按鈕 (固定在右側) -->
-  <button id="add-group-btn" class="add-group-btn-sidebar" type="button" style="display: none;">新增帳本</button>
+  <button id="add-group-btn" class="add-group-btn-sidebar" type="button" style="display: none;">新增群組</button>
   
   <!-- 新增組員按鈕 (固定在右側，新增群組下方) -->
-  <button id="add-member-btn-fixed" class="add-member-btn-fixed" type="button" style="display: none;">新增成員</button>
+  <button id="add-member-btn-fixed" class="add-member-btn-fixed" type="button" style="display: none;">新增組員</button>
   
   <!-- 組員列表顯示區域 (固定在左側) -->
   <div id="members-display-fixed" class="members-display-fixed" style="display: none;">
-    <h3>帳本成員</h3>
-    <p style="font-size: 11px; color: #666; margin-bottom: 10px;">可共同編輯此帳本的成員</p>
+    <h3>群組成員</h3>
+    <p style="font-size: 11px; color: #666; margin-bottom: 10px;">可共同編輯的成員</p>
     <div id="members-list-fixed">
       <!-- Members will be displayed here -->
     </div>
@@ -135,8 +135,8 @@
   <div id="main-page" class="page-view">
     <div class="container">
       <header>
-        <h1>團隊財務記帳系統</h1>
-        <p class="subtitle">清楚掌握收支流向，方便做預算與報表 🧾📊</p>
+        <h1>零用錢記帳小管家</h1>
+        <p class="subtitle">理清金錢去向，更好管理零用錢 🧾💰</p>
 
       <!-- 顏色選擇按鈕 -->
       <button id="color-picker-btn" class="color-picker-btn" title="更換背景顏色" type="button">🎨</button>
@@ -156,16 +156,16 @@
 
     <!-- 圓餅圖區塊 -->
     <section class="box" id="chart-section">
-      <h3>財務分析</h3>
-      <p class="subtitle small">快速掌握收入、費用與佔比</p>
+      <h3>收支圓餅圖</h3>
+      <p class="subtitle small">一眼看出收入與支出比例</p>
 
       <!-- 圖表類型切換 -->
       <div class="chart-tabs">
-        <button class="chart-tab active" data-type="total" type="button">總收支佔比</button>
-        <button class="chart-tab" data-type="category" type="button">會計科目佔比</button>
-        <button class="chart-tab" data-type="month" type="button">月別收支佔比</button>
+        <button class="chart-tab active" data-type="total" type="button">總收支圓餅圖</button>
+        <button class="chart-tab" data-type="category" type="button">類別圓餅圖</button>
+        <button class="chart-tab" data-type="month" type="button">月收支圓餅圖</button>
         <select id="month-selector" class="chart-selector"></select>
-        <button class="chart-tab" data-type="year" type="button">年度收支佔比</button>
+        <button class="chart-tab" data-type="year" type="button">年收支圓餅圖</button>
         <select id="year-selector" class="chart-selector"></select>
       </div>
 
@@ -177,22 +177,22 @@
     <!-- 總覽 -->
     <section id="summary" class="summary">
       <div class="card">
-        <div class="card-title">總收入（Revenue）</div>
+        <div class="card-title">總收入</div>
         <div id="total-income" class="kpi income">0</div>
       </div>
       <div class="card">
-        <div class="card-title">總費用（Expense）</div>
+        <div class="card-title">總支出</div>
         <div id="total-expense" class="kpi expense">0</div>
       </div>
       <div class="card">
-        <div class="card-title">淨額（Net）</div>
+        <div class="card-title">目前結餘</div>
         <div id="balance" class="kpi balance">0</div>
       </div>
     </section>
 
     <!-- 新增紀錄 -->
     <section class="box">
-      <h3>新增交易紀錄</h3>
+      <h3>新增收支紀錄</h3>
       <form id="tx-form">
         <div class="row">
           <select name="type" required>
@@ -215,7 +215,7 @@
             type="text"
             id="custom-category"
             class="custom-category"
-            placeholder="自訂會計科目（選『其他』才會出現）"
+            placeholder="自訂類別（選『其他』才會出現）"
             autocomplete="off"
           />
 
@@ -233,7 +233,7 @@
 
     <!-- 收支紀錄 -->
     <section id="records" class="box">
-      <h3>交易明細</h3>
+      <h3>收支紀錄</h3>
       
       <!-- 篩選區域 -->
       <div class="filter-section">
@@ -244,9 +244,9 @@
           <input type="number" id="filter-day" placeholder="日" min="1" max="31" class="filter-input" />
         </div>
         <div class="filter-group">
-          <label>會計科目篩選：</label>
+          <label>類別篩選：</label>
           <select id="filter-category" class="filter-select">
-            <option value="">全部科目</option>
+            <option value="">全部類別</option>
           </select>
         </div>
         <div class="filter-actions">
@@ -262,9 +262,8 @@
               <th>日期</th>
               <th>類型</th>
               <th class="num">金額</th>
-              <th>會計科目</th>
-              <th>登錄人</th>
-              <th>用途／備註</th>
+              <th>分類</th>
+              <th>備註</th>
               <th></th>
             </tr>
           </thead>
@@ -279,8 +278,8 @@
   <div id="groups-page" class="page-view" style="display: none;">
     <div class="container">
       <header>
-        <h1 id="group-title">團隊帳本</h1>
-        <p class="subtitle" id="group-description">團隊共用帳本，追蹤專案／部門收支 👥📒</p>
+        <h1 id="group-title">群組</h1>
+        <p class="subtitle" id="group-description">與好友一起記帳，共同管理群組支出 👥💰</p>
 
       <!-- 顏色選擇按鈕 -->
       <button id="color-picker-btn-groups" class="color-picker-btn" title="更換背景顏色" type="button">🎨</button>
@@ -300,17 +299,17 @@
 
     <!-- 圓餅圖區塊 -->
     <section class="box" id="chart-section-groups">
-      <h3>財務分析</h3>
-      <p class="subtitle small">快速掌握收入、費用與佔比</p>
+      <h3>收支圓餅圖</h3>
+      <p class="subtitle small">一眼看出收入與支出比例</p>
 
       <!-- 圖表類型切換 -->
       <div class="chart-tabs">
-        <button class="chart-tab active" data-type="total" type="button">總收支佔比</button>
-        <button class="chart-tab" data-type="category" type="button">會計科目佔比</button>
-        <button class="chart-tab" data-type="member" type="button">成員分析</button>
-        <button class="chart-tab" data-type="month" type="button">月別收支佔比</button>
+        <button class="chart-tab active" data-type="total" type="button">總收支圓餅圖</button>
+        <button class="chart-tab" data-type="category" type="button">類別圓餅圖</button>
+        <button class="chart-tab" data-type="member" type="button">成員圓餅圖</button>
+        <button class="chart-tab" data-type="month" type="button">月收支圓餅圖</button>
         <select id="month-selector-groups" class="chart-selector"></select>
-        <button class="chart-tab" data-type="year" type="button">年度收支佔比</button>
+        <button class="chart-tab" data-type="year" type="button">年收支圓餅圖</button>
         <select id="year-selector-groups" class="chart-selector"></select>
       </div>
 
@@ -322,24 +321,37 @@
     <!-- 總覽 -->
     <section id="summary-groups" class="summary">
       <div class="card">
-        <div class="card-title">總收入（Revenue）</div>
+        <div class="card-title">總收入</div>
         <div id="total-income-groups" class="kpi income">0</div>
       </div>
       <div class="card">
-        <div class="card-title">總費用（Expense）</div>
+        <div class="card-title">總支出</div>
         <div id="total-expense-groups" class="kpi expense">0</div>
       </div>
       <div class="card">
-        <div class="card-title">淨額（Net）</div>
+        <div class="card-title">目前結餘</div>
         <div id="balance-groups" class="kpi balance">0</div>
       </div>
     </section>
 
-    <!-- 新增群組紀錄 -->
+    <!-- 新增紀錄 -->
     <section class="box">
-      <h3>新增交易紀錄</h3>
+      <h3>新增收支紀錄</h3>
       <form id="tx-form-groups">
         <div class="row">
+          <select name="member" id="member-select-groups">
+            <option value="">無</option>
+            <option value="其他">其他</option>
+          </select>
+
+          <input
+            type="text"
+            id="custom-member-groups"
+            class="custom-category"
+            placeholder="輸入成員名稱"
+            autocomplete="off"
+          />
+          
           <select name="type" required>
             <option value="支出">支出</option>
             <option value="收入">收入</option>
@@ -347,6 +359,7 @@
 
           <input type="number" name="amount" placeholder="金額" min="0" step="1" required />
 
+          <!-- ✅ 這裡：加 id，並保留原本選項 -->
           <select name="category" id="category-select-groups" required>
             <option>飲食</option>
             <option>交通</option>
@@ -354,22 +367,18 @@
             <option>其他</option>
           </select>
 
+          <!-- ✅ 這裡：新增自訂類別輸入框（預設隱藏） -->
           <input
             type="text"
             id="custom-category-groups"
             class="custom-category"
-            placeholder="自訂會計科目（選『其他』才會出現）"
+            placeholder="自訂類別（選『其他』才會出現）"
             autocomplete="off"
           />
 
-          <select name="member" id="member-select-groups" required>
-            <option value="">選擇成員</option>
-            <option value="其他">其他</option>
-          </select>
-
-          <input type="text" id="custom-member-groups" placeholder="輸入成員名稱" style="display: none;" />
-
           <input type="date" name="date" id="date-input-groups" required />
+          
+          <button type="button" id="manage-members-btn" class="btn" style="white-space: nowrap;">管理成員</button>
         </div>
 
         <textarea name="note" placeholder="備註（可留空）"></textarea>
@@ -381,10 +390,10 @@
       </form>
     </section>
 
-    <!-- 群組紀錄 -->
-    <section class="box">
-      <h3>交易明細</h3>
-
+    <!-- 收支紀錄 -->
+    <section id="records-groups" class="box">
+      <h3>收支紀錄</h3>
+      
       <!-- 篩選區域 -->
       <div class="filter-section">
         <div class="filter-group">
@@ -394,9 +403,9 @@
           <input type="number" id="filter-day-groups" placeholder="日" min="1" max="31" class="filter-input" />
         </div>
         <div class="filter-group">
-          <label>會計科目篩選：</label>
+          <label>類別篩選：</label>
           <select id="filter-category-groups" class="filter-select">
-            <option value="">全部科目</option>
+            <option value="">全部類別</option>
           </select>
         </div>
         <div class="filter-group">
@@ -410,7 +419,15 @@
           <button id="clear-filter-btn-groups" class="btn" type="button">清除篩選</button>
         </div>
       </div>
-
+      
+      <!-- 批次同步區域 -->
+      <div class="batch-sync-section" style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
+        <button type="button" id="batch-sync-btn" class="btn" style="white-space: nowrap;">一鍵同步收支到個人</button>
+        <select id="batch-sync-member-select" style="flex: 1;">
+          <option value="">選擇成員</option>
+        </select>
+      </div>
+      
       <div class="table-wrap">
         <table>
           <thead>
@@ -418,10 +435,9 @@
               <th>日期</th>
               <th>類型</th>
               <th class="num">金額</th>
-              <th>會計科目</th>
-              <th>費用歸屬</th>
-              <th>登錄人</th>
-              <th>用途／備註</th>
+              <th>分類</th>
+              <th>成員</th>
+              <th>備註</th>
               <th></th>
             </tr>
           </thead>
@@ -430,6 +446,65 @@
       </div>
     </section>
   </div>
+  </div>
+
+  <!-- 登入 Modal -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-login">&times;</span>
+      <h2>登入</h2>
+      <form id="login-form">
+        <input type="text" id="login-username" placeholder="帳號" required autocomplete="username" />
+        <input type="password" id="login-password" placeholder="密碼" required autocomplete="current-password" />
+        <button type="submit" class="btn primary">登入</button>
+      </form>
+      <p class="form-message" id="login-message"></p>
+    </div>
+  </div>
+
+  <!-- 管理成員 Modal -->
+  <div id="manage-members-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-manage-members">&times;</span>
+      <h2>管理成員</h2>
+      <div id="members-list" class="members-list"></div>
+    </div>
+  </div>
+
+  <!-- 新增組員 Modal -->
+  <div id="add-member-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" id="add-member-modal-close">&times;</span>
+      <h3>新增組員</h3>
+      <form id="add-member-form">
+        <div class="form-group">
+          <label for="member-name-input">組員帳號（必須為已註冊使用者）</label>
+          <input type="text" id="member-name-input" placeholder="輸入已註冊的使用者帳號" required />
+          <p style="font-size: 12px; color: #666; margin-top: 8px;">
+            ⚠️ 只有已註冊的使用者才能加入群組並共同編輯紀錄
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn primary">加入群組</button>
+          <button type="button" class="btn" id="add-member-modal-cancel">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 註冊 Modal -->
+  <div id="register-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-register">&times;</span>
+      <h2>註冊</h2>
+      <form id="register-form">
+        <input type="text" id="register-username" placeholder="帳號（4-20字元）" required autocomplete="username" />
+        <input type="password" id="register-password" placeholder="密碼（至少6字元）" required autocomplete="new-password" />
+        <input type="password" id="register-password-confirm" placeholder="確認密碼" required autocomplete="new-password" />
+        <button type="submit" class="btn primary">註冊</button>
+      </form>
+      <p class="form-message" id="register-message"></p>
+    </div>
   </div>
 
   <!-- Chart.js -->
