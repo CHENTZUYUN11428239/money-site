@@ -455,9 +455,9 @@ if (editGroupNameForm) {
     
     const nameInput = document.getElementById('edit-group-name-input');
     const newName = nameInput.value.trim();
-    const groupId = nameInput.getAttribute('data-group-id');
+    const groupId = parseInt(nameInput.getAttribute('data-group-id'), 10);
     
-    if (!groupId) {
+    if (isNaN(groupId) || groupId <= 0) {
       console.log('No group ID found'); // Debug log
       alert('無法找到群組資料！');
       return;
